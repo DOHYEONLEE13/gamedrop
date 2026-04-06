@@ -1,0 +1,85 @@
+import { motion } from "framer-motion";
+import { fadeUp } from "@/lib/utils";
+
+const HERO_VIDEO_URL =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
+
+const avatarColors = ["#444", "#666", "#888"];
+
+export default function Hero() {
+  return (
+    <section className="relative min-h-screen flex items-start justify-center overflow-hidden">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src={HERO_VIDEO_URL} type="video/mp4" />
+      </video>
+
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background to-transparent z-[1]" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6 pt-28 md:pt-32 max-w-3xl mx-auto">
+        {/* Avatar row */}
+        <motion.div {...fadeUp(0)} className="flex items-center mb-6">
+          <div className="flex -space-x-2">
+            {avatarColors.map((color, i) => (
+              <div
+                key={i}
+                className="w-8 h-8 rounded-full border-2 border-background"
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+          <span className="ml-3 text-muted-foreground text-sm">
+            가입 47초, 업로드 3초, 비용 0원
+          </span>
+        </motion.div>
+
+        {/* Heading */}
+        <motion.h1
+          {...fadeUp(0.1)}
+          className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-2px] leading-[1.05] mb-6"
+        >
+          게임 만들었으면,{" "}
+          <span className="font-serif italic font-normal">3초</span>면
+          올린다.
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          {...fadeUp(0.2)}
+          className="text-lg text-hero-subtitle mb-10 max-w-xl"
+        >
+          AI로 만든 HTML 게임, 파일 하나 끌어다 놓으면 전 세계가 플레이합니다.
+          도메인 없이. 서버 없이. 배포 지식 없이.
+        </motion.p>
+
+        {/* Email form */}
+        <motion.div
+          {...fadeUp(0.3)}
+          className="liquid-glass rounded-full p-2 flex items-center w-full max-w-lg"
+        >
+          <input
+            type="email"
+            placeholder="지금 게임을 업로드 하세요"
+            readOnly
+            className="flex-1 bg-transparent px-5 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none cursor-pointer"
+          />
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-foreground text-background rounded-full px-8 py-3 text-sm font-semibold whitespace-nowrap"
+          >
+            지금 무료로 시작하기
+          </motion.button>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
