@@ -9,18 +9,6 @@ import GamePlayModal from "./GamePlayModal";
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
 
-const sizePattern = ["lg", "sm", "sm", "md", "sm", "wide", "sm", "md", "lg", "sm", "wide", "sm", "sm", "sm", "md", "wide", "sm", "sm"] as const;
-
-function getSizeClass(index: number) {
-  const size = sizePattern[index % sizePattern.length];
-  switch (size) {
-    case "lg": return "col-span-2 row-span-2";
-    case "wide": return "col-span-2 row-span-1";
-    case "md": return "col-span-1 row-span-2";
-    case "sm": default: return "col-span-1 row-span-1";
-  }
-}
-
 const categories = [
   "장애물 게임", "인기 있는 게임", "어드벤쳐 게임", "모바일 게임",
   "스킬 게임", "액션 게임", "Brainrot Games", "운전 게임",
@@ -107,7 +95,7 @@ export default function GameGrid() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-[120px] sm:auto-rows-[140px] md:auto-rows-[160px] gap-2 md:gap-3"
+              className="columns-2 sm:columns-3 md:columns-4 lg:columns-6 gap-2 md:gap-3 [column-fill:_balance]"
             >
               {displayGames.map((game, i) => (
                 <motion.div
@@ -121,13 +109,13 @@ export default function GameGrid() {
                   onClick={() => {
                     if (game.dbGame) setSelectedGame(game.dbGame);
                   }}
-                  className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group`}
+                  className="relative mb-2 md:mb-3 break-inside-avoid rounded-xl overflow-hidden cursor-pointer group"
                 >
                   <img
                     src={game.thumbnail}
                     alt={game.title}
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
+                    className="block w-full h-auto transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

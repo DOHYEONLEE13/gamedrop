@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import CountUp from "@/components/CountUp";
+import GamePlayModal from "@/components/GamePlayModal";
 import { getSessionToken } from "@/hooks/useAuth";
 import type { Game } from "@/types/database";
 
@@ -63,6 +64,7 @@ export default function AdminPage() {
     pending_games: 0, live_games: 0, total_views: 0, total_likes: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [previewGame, setPreviewGame] = useState<Game | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -209,6 +211,12 @@ export default function AdminPage() {
                     <p className="text-foreground text-sm font-medium truncate">{g.title}</p>
                     <p className="text-muted-foreground text-xs">{categoryLabel[g.category] || g.category} · {g.type === "shortform" ? "SHORT" : "LONG"}</p>
                   </div>
+                  <button
+                    onClick={() => setPreviewGame(g)}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-colors"
+                  >
+                    미리보기
+                  </button>
                   <button
                     onClick={() => updateStatus(g, "live")}
                     className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
@@ -358,6 +366,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => setPreviewGame(game)} className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">미리보기</button>
                           {game.status !== "live" && (
                             <button onClick={() => updateStatus(game, "live")} className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">게시</button>
                           )}
@@ -375,6 +384,8 @@ export default function AdminPage() {
           )}
         </motion.div>
       </div>
+
+      <GamePlayModal game={previewGame} onClose={() => setPreviewGame(null)} />
     </section>
   );
 }

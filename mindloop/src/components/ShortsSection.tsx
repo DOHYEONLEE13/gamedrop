@@ -102,6 +102,17 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
     await toggleLike();
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/shorts?game=${game.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("URL이 복사되었습니다", "success");
+    } catch {
+      toast("복사 실패", "error");
+    }
+  };
+
   const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) { setShowAuth(true); return; }
@@ -217,7 +228,7 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
                 active={saved}
                 onClick={handleSave}
               />
-              <ActionButton icon={<ShareIcon />} label="공유" />
+              <ActionButton icon={<ShareIcon />} label="공유" onClick={handleShare} />
             </div>
           </div>
         </motion.div>
@@ -231,6 +242,18 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
 /* ── Mock Short Card (fallback) ── */
 function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActive: boolean }) {
   const [liked, setLiked] = useState(false);
+  const { toast } = useToast();
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/shorts?game=${game.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("URL이 복사되었습니다", "success");
+    } catch {
+      toast("복사 실패", "error");
+    }
+  };
 
   return (
     <div className="snap-start snap-always h-full flex-shrink-0 flex items-center justify-center px-4">
@@ -275,7 +298,7 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
           <div className="absolute bottom-6 right-3 flex flex-col gap-4 z-[3]">
             <ActionButton icon={<HeartIcon filled={liked} />} label={formatNumber(game.likes + (liked ? 1 : 0))} active={liked} onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} />
             <ActionButton icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5,3 19,12 5,21" /></svg>} label={formatNumber(game.plays)} />
-            <ActionButton icon={<ShareIcon />} label="공유" />
+            <ActionButton icon={<ShareIcon />} label="공유" onClick={handleShare} />
           </div>
         </div>
       </motion.div>

@@ -1,13 +1,24 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Hls from "hls.js";
 import { fadeUp } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/AuthContext";
+import AuthModal from "./AuthModal";
 
 const HLS_URL =
   "https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8";
 
 export default function CTA() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const handleCta = () => {
+    if (user) navigate("/upload");
+    else setAuthOpen(true);
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -78,6 +89,7 @@ export default function CTA() {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
+            onClick={handleCta}
             className="bg-foreground text-background rounded-lg px-8 py-3.5 text-sm font-semibold"
           >
             무료로 시작하기
@@ -85,12 +97,15 @@ export default function CTA() {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
+            onClick={handleCta}
             className="liquid-glass rounded-lg px-8 py-3.5 text-sm font-semibold text-foreground"
           >
             게임 업로드하기
           </motion.button>
         </motion.div>
       </div>
+
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </section>
   );
 }

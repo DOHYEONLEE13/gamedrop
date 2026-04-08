@@ -137,6 +137,19 @@ export interface Database {
         }[];
       };
       uploader_list_games: { Args: { p_token: string }; Returns: Game[] };
+      uploader_update_game: {
+        Args: {
+          p_token: string;
+          p_game_id: string;
+          p_title: string;
+          p_description: string | null;
+          p_category: string;
+          p_type: string;
+          p_playtime: string | null;
+          p_tags: string[] | null;
+        };
+        Returns: void;
+      };
       admin_list_games: { Args: { p_token: string }; Returns: Game[] };
       admin_update_game_status: {
         Args: { p_token: string; p_game_id: string; p_new_status: string };
