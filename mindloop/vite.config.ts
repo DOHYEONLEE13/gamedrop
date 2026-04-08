@@ -10,4 +10,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    // Cloudflare Pages root directory is the repo root, so emit dist there.
+    outDir: path.resolve(__dirname, '../dist'),
+    emptyOutDir: true,
+  },
 })
