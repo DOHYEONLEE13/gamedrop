@@ -29,10 +29,10 @@ export default function ContactPage() {
                 이메일
               </h2>
               <a
-                href="mailto:gamedrop.official@gmail.com"
+                href="mailto:gamedrop.official1@gmail.com"
                 className="text-accent hover:underline"
               >
-                gamedrop.official@gmail.com
+                gamedrop.official1@gmail.com
               </a>
             </div>
 

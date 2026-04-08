@@ -187,10 +187,10 @@ export default function PrivacyPolicyPage() {
               <li>
                 <strong className="text-foreground">이메일:</strong>{" "}
                 <a
-                  href="mailto:gamedrop.official@gmail.com"
+                  href="mailto:gamedrop.official1@gmail.com"
                   className="text-accent hover:underline"
                 >
-                  gamedrop.official@gmail.com
+                  gamedrop.official1@gmail.com
                 </a>
               </li>
             </ul>

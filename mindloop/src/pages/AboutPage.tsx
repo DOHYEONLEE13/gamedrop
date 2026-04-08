@@ -65,10 +65,10 @@ export default function AboutPage() {
             <p>
               제안, 문의, 제휴는{" "}
               <a
-                href="mailto:gamedrop.official@gmail.com"
+                href="mailto:gamedrop.official1@gmail.com"
                 className="text-accent hover:underline"
               >
-                gamedrop.official@gmail.com
+                gamedrop.official1@gmail.com
               </a>
               으로 보내주세요.
             </p>
