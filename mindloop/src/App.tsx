@@ -11,6 +11,10 @@ import SearchPage from "@/pages/SearchPage";
 import MyGamesPage from "@/pages/MyGamesPage";
 import AdminPage from "@/pages/AdminPage";
 import DashboardPage from "@/pages/DashboardPage";
+import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
+import TermsOfServicePage from "@/pages/TermsOfServicePage";
+import ContactPage from "@/pages/ContactPage";
+import AboutPage from "@/pages/AboutPage";
 
 export default function App() {
   return (
@@ -28,6 +32,10 @@ export default function App() {
               <Route path="/my-games" element={<MyGamesPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/about" element={<AboutPage />} />
             </Routes>
             <MobileTabBar />
           </div>

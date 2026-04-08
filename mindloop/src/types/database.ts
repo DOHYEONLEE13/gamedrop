@@ -12,12 +12,13 @@ export interface Database {
           tags: string[] | null;
           views: number;
           likes: number;
-          status: "live" | "draft" | "pending";
+          status: "live" | "draft" | "pending" | "rejected";
           html_url: string | null;
           thumbnail_url: string | null;
           file_paths: string[] | null;
           entry_file: string | null;
           uploader_id: string | null;
+          rejection_reason: string | null;
           created_at: string;
         };
         Insert: {
@@ -150,12 +151,14 @@ export interface Database {
         };
         Returns: void;
       };
-      admin_list_games: { Args: { p_token: string }; Returns: Game[] };
+      admin_list_games: { Args: { p_token: string }; Returns: (Game & { uploader_username: string | null })[] };
       admin_update_game_status: {
         Args: { p_token: string; p_game_id: string; p_new_status: string };
         Returns: void;
       };
       admin_delete_game: { Args: { p_token: string; p_game_id: string }; Returns: void };
+      admin_reject_game: { Args: { p_token: string; p_game_id: string; p_reason: string }; Returns: void };
+      uploader_dismiss_rejection: { Args: { p_token: string; p_game_id: string }; Returns: void };
       admin_system_stats: {
         Args: { p_token: string };
         Returns: {

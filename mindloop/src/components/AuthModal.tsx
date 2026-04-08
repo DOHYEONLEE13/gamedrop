@@ -1,9 +1,49 @@
-import { useState, type FormEvent } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 
 type Tab = "login" | "signup";
+
+const COMMON_PASSWORDS = new Set([
+  "password", "password1", "password123", "qwerty", "qwerty123",
+  "123456", "1234567", "12345678", "123456789", "1234567890",
+  "111111", "000000", "abc123", "iloveyou", "admin", "letmein",
+  "welcome", "monkey", "dragon", "master", "asdf1234", "asdfasdf",
+  "gamedrop", "playwave",
+]);
+
+interface PasswordCheck {
+  score: 0 | 1 | 2 | 3 | 4;
+  label: string;
+  color: string;
+  reason: string | null;
+}
+
+function evaluatePassword(pw: string): PasswordCheck {
+  if (!pw) return { score: 0, label: "", color: "bg-white/10", reason: null };
+  if (COMMON_PASSWORDS.has(pw.toLowerCase())) {
+    return { score: 1, label: "매우 약함", color: "bg-red-500", reason: "자주 쓰이는 비밀번호입니다" };
+  }
+  if (pw.length < 8) {
+    return { score: 1, label: "매우 약함", color: "bg-red-500", reason: "8자 이상 필요합니다" };
+  }
+  const hasLower = /[a-z]/.test(pw);
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasDigit = /\d/.test(pw);
+  const hasSymbol = /[^A-Za-z0-9]/.test(pw);
+  const variety = [hasLower || hasUpper, hasDigit, hasSymbol, hasUpper && hasLower].filter(Boolean).length;
+  if (!hasDigit || !(hasLower || hasUpper)) {
+    return { score: 2, label: "약함", color: "bg-orange-500", reason: "영문과 숫자를 함께 사용하세요" };
+  }
+  if (pw.length >= 12 && variety >= 3) {
+    return { score: 4, label: "강함", color: "bg-green-500", reason: null };
+  }
+  if (pw.length >= 10 && variety >= 2) {
+    return { score: 3, label: "보통", color: "bg-yellow-500", reason: null };
+  }
+  return { score: 2, label: "약함", color: "bg-orange-500", reason: "더 길게 만들거나 기호를 추가하세요" };
+}
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -25,6 +65,8 @@ export default function AuthModal({
 
   const { login, register } = useAuthContext();
   const { toast } = useToast();
+
+  const pwCheck = useMemo(() => evaluatePassword(password), [password]);
 
   const resetForm = () => {
     setUsername("");
@@ -68,8 +110,12 @@ export default function AuthModal({
       setError("아이디는 3자 이상이어야 합니다");
       return;
     }
-    if (!password || password.length < 4) {
-      setError("비밀번호는 4자 이상이어야 합니다");
+    if (!password || password.length < 8) {
+      setError("비밀번호는 8자 이상이어야 합니다");
+      return;
+    }
+    if (pwCheck.score < 3) {
+      setError(pwCheck.reason || "비밀번호가 너무 약합니다 (영문 + 숫자 8자 이상 권장)");
       return;
     }
     setLoading(true);
@@ -181,6 +227,32 @@ export default function AuthModal({
                   autoComplete={tab === "login" ? "current-password" : "new-password"}
                   className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-foreground text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground/30 transition-colors"
                 />
+                {tab === "signup" && password.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 flex-1 rounded-full transition-colors duration-200 ${
+                            i <= pwCheck.score ? pwCheck.color : "bg-white/10"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[10px] text-muted-foreground">
+                        {pwCheck.reason || "영문 + 숫자 8자 이상 권장"}
+                      </span>
+                      <span className={`text-[10px] font-semibold ${
+                        pwCheck.score >= 3 ? "text-green-400"
+                        : pwCheck.score === 2 ? "text-orange-400"
+                        : "text-red-400"
+                      }`}>
+                        {pwCheck.label}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 type="submit"

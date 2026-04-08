@@ -9,6 +9,8 @@ import GamePlayModal from "@/components/GamePlayModal";
 import { getSessionToken } from "@/hooks/useAuth";
 import type { Game } from "@/types/database";
 
+type AdminGame = Game & { uploader_username?: string | null };
+
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
 
@@ -58,7 +60,7 @@ export default function AdminPage() {
   const { user, isAdmin, loading: authLoading } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [games, setGames] = useState<Game[]>([]);
+  const [games, setGames] = useState<AdminGame[]>([]);
   const [stats, setStats] = useState<SystemStats>({
     total_users: 0, total_uploaders: 0, total_games: 0,
     pending_games: 0, live_games: 0, total_views: 0, total_likes: 0,
@@ -76,7 +78,7 @@ export default function AdminPage() {
     if (gamesRes.error) {
       toast("게임 목록 로딩 실패", "error");
     } else {
-      setGames((gamesRes.data || []) as Game[]);
+      setGames((gamesRes.data || []) as AdminGame[]);
     }
     if (statsRes.data && statsRes.data[0]) {
       setStats(statsRes.data[0] as SystemStats);
@@ -104,6 +106,19 @@ export default function AdminPage() {
       newStatus === "live" ? `${game.title} 승인/게시` : newStatus === "draft" ? `${game.title} 숨김` : `${game.title} 대기`,
       "success"
     );
+    fetchData();
+  };
+
+  const rejectGame = async (game: Game) => {
+    const reason = prompt(`"${game.title}" 거절 사유를 입력하세요 (업로더에게 표시됩니다):`);
+    if (!reason || !reason.trim()) return;
+    const { error } = await supabase.rpc("admin_reject_game", {
+      p_token: getSessionToken(),
+      p_game_id: game.id,
+      p_reason: reason.trim(),
+    });
+    if (error) { toast("거절 실패", "error"); return; }
+    toast(`${game.title} 거절됨`, "success");
     fetchData();
   };
 
@@ -209,7 +224,11 @@ export default function AdminPage() {
                   {g.thumbnail_url && <img src={g.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <p className="text-foreground text-sm font-medium truncate">{g.title}</p>
-                    <p className="text-muted-foreground text-xs">{categoryLabel[g.category] || g.category} · {g.type === "shortform" ? "SHORT" : "LONG"}</p>
+                    <p className="text-muted-foreground text-xs">
+                      <span className="text-foreground/70">@{g.uploader_username || "unknown"}</span>
+                      {" · "}
+                      {categoryLabel[g.category] || g.category} · {g.type === "shortform" ? "SHORT" : "LONG"}
+                    </p>
                   </div>
                   <button
                     onClick={() => setPreviewGame(g)}
@@ -224,10 +243,10 @@ export default function AdminPage() {
                     승인
                   </button>
                   <button
-                    onClick={() => deleteGame(g)}
+                    onClick={() => rejectGame(g)}
                     className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                   >
-                    거부
+                    거절
                   </button>
                 </div>
               ))}
@@ -332,6 +351,7 @@ export default function AdminPage() {
                 <thead>
                   <tr className="border-b border-white/10 text-muted-foreground text-xs">
                     <th className="text-left px-5 py-3 font-medium">제목</th>
+                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">업로더</th>
                     <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">유형</th>
                     <th className="text-left px-3 py-3 font-medium hidden md:table-cell">카테고리</th>
                     <th className="text-right px-3 py-3 font-medium hidden sm:table-cell">조회수</th>
@@ -347,6 +367,9 @@ export default function AdminPage() {
                           {game.thumbnail_url && <img src={game.thumbnail_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />}
                           <span className="text-foreground font-medium truncate max-w-[200px]">{game.title}</span>
                         </div>
+                      </td>
+                      <td className="px-3 py-3 hidden md:table-cell text-muted-foreground text-xs">
+                        @{game.uploader_username || "unknown"}
                       </td>
                       <td className="px-3 py-3 hidden sm:table-cell">
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">

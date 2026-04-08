@@ -237,6 +237,38 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
+        {/* Rejection notices */}
+        {games.filter((g) => g.status === "rejected" && g.rejection_reason).length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 space-y-2"
+          >
+            {games
+              .filter((g) => g.status === "rejected" && g.rejection_reason)
+              .map((g) => (
+                <div key={g.id} className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground text-sm font-semibold">"{g.title}" 게시 거절</p>
+                    <p className="text-muted-foreground text-xs mt-1">관리자 사유: {g.rejection_reason}</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await supabase.rpc("uploader_dismiss_rejection", { p_token: getSessionToken(), p_game_id: g.id });
+                      load();
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  >
+                    확인
+                  </button>
+                </div>
+              ))}
+          </motion.div>
+        )}
+
         {/* Per-game performance bars */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -285,9 +317,10 @@ export default function DashboardPage() {
                             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
                               g.status === "live" ? "bg-green-500/15 text-green-400"
                               : g.status === "pending" ? "bg-yellow-500/15 text-yellow-400"
+                              : g.status === "rejected" ? "bg-red-500/15 text-red-400"
                               : "bg-gray-500/15 text-gray-400"
                             }`}>
-                              {g.status === "live" ? "게시중" : g.status === "pending" ? "대기" : "숨김"}
+                              {g.status === "live" ? "게시중" : g.status === "pending" ? "대기" : g.status === "rejected" ? "거절됨" : "숨김"}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
