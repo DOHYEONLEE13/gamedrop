@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { fadeUp } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/AuthContext";
+import AuthModal from "./AuthModal";
 
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
@@ -7,6 +11,15 @@ const HERO_VIDEO_URL =
 const avatarColors = ["#444", "#666", "#888"];
 
 export default function Hero() {
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const handleCta = () => {
+    if (user) navigate("/upload");
+    else setAuthOpen(true);
+  };
+
   return (
     <section className="relative min-h-screen flex items-start justify-center overflow-hidden">
       {/* Background Video */}
@@ -60,26 +73,30 @@ export default function Hero() {
           도메인 없이. 서버 없이. 배포 지식 없이.
         </motion.p>
 
-        {/* Email form */}
+        {/* CTA row */}
         <motion.div
           {...fadeUp(0.3)}
-          className="liquid-glass rounded-full p-2 flex items-center w-full max-w-lg"
+          className="liquid-glass rounded-full p-2 flex items-center w-full max-w-lg cursor-pointer"
+          onClick={handleCta}
         >
-          <input
-            type="email"
-            placeholder="지금 게임을 업로드 하세요"
-            readOnly
-            className="flex-1 min-w-0 bg-transparent px-3 sm:px-5 py-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none cursor-pointer"
-          />
+          <div className="flex-1 min-w-0 px-3 sm:px-5 py-3 text-xs sm:text-sm text-muted-foreground text-left truncate">
+            지금 게임을 업로드 하세요
+          </div>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCta();
+            }}
             className="bg-foreground text-background rounded-full px-4 sm:px-8 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap flex-shrink-0"
           >
             지금 무료로 시작하기
           </motion.button>
         </motion.div>
       </div>
+
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </section>
   );
 }

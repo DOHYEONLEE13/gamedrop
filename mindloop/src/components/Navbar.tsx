@@ -82,7 +82,7 @@ export default function Navbar() {
           <div className="relative flex items-center justify-center w-7 h-7 rounded-full border-2 border-foreground/60">
             <div className="w-3 h-3 rounded-full border border-foreground/60" />
           </div>
-          <span className="font-bold text-base text-foreground">PLAYWAVE</span>
+          <span className="font-bold text-base text-foreground">GameDrop</span>
         </Link>
 
         {/* Nav Links */}
