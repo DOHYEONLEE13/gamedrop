@@ -1,0 +1,8 @@
+{
+  "name": "gamedrop-root",
+  "private": true,
+  "scripts": {
+    "install": "cd mindloop && npm install",
+    "build": "cd mindloop && npm install && npm run build"
+  }
+}
