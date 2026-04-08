@@ -29,7 +29,7 @@ const features = [
 
 export default function Solution() {
   return (
-    <section className="py-32 md:py-44 px-6 md:px-28 border-t border-border/30">
+    <section className="py-32 md:py-44 px-5 md:px-28 border-t border-border/30">
       <motion.p
         {...fadeUp(0)}
         className="text-xs tracking-[3px] uppercase text-muted-foreground mb-6"
@@ -39,7 +39,7 @@ export default function Solution() {
 
       <motion.h2
         {...fadeUp(0.1)}
-        className="text-4xl md:text-6xl font-medium tracking-[-1.5px] leading-[1.1] mb-16 max-w-3xl"
+        className="text-[2rem] sm:text-4xl md:text-6xl font-medium tracking-[-1px] md:tracking-[-1.5px] leading-[1.1] mb-12 md:mb-16 max-w-3xl"
       >
         이 3가지를{" "}
         <span className="font-serif italic font-normal">없앴습니다</span>

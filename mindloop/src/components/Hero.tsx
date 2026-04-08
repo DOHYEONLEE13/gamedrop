@@ -24,7 +24,7 @@ export default function Hero() {
       <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background to-transparent z-[1]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 pt-28 md:pt-32 max-w-3xl mx-auto">
+      <div className="relative z-10 flex flex-col items-center text-center px-5 pt-24 md:pt-32 max-w-3xl mx-auto w-full">
         {/* Avatar row */}
         <motion.div {...fadeUp(0)} className="flex items-center mb-6">
           <div className="flex -space-x-2">
@@ -44,7 +44,7 @@ export default function Hero() {
         {/* Heading */}
         <motion.h1
           {...fadeUp(0.1)}
-          className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-2px] leading-[1.05] mb-6"
+          className="text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-1px] md:tracking-[-2px] leading-[1.1] mb-6"
         >
           게임 만들었으면,{" "}
           <span className="font-serif italic font-normal">3초</span>면
@@ -54,7 +54,7 @@ export default function Hero() {
         {/* Subtitle */}
         <motion.p
           {...fadeUp(0.2)}
-          className="text-lg text-hero-subtitle mb-10 max-w-xl"
+          className="text-base md:text-lg text-hero-subtitle mb-8 md:mb-10 max-w-xl px-2"
         >
           AI로 만든 HTML 게임, 파일 하나 끌어다 놓으면 전 세계가 플레이합니다.
           도메인 없이. 서버 없이. 배포 지식 없이.
@@ -69,12 +69,12 @@ export default function Hero() {
             type="email"
             placeholder="지금 게임을 업로드 하세요"
             readOnly
-            className="flex-1 bg-transparent px-5 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none cursor-pointer"
+            className="flex-1 min-w-0 bg-transparent px-3 sm:px-5 py-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none cursor-pointer"
           />
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
-            className="bg-foreground text-background rounded-full px-8 py-3 text-sm font-semibold whitespace-nowrap"
+            className="bg-foreground text-background rounded-full px-4 sm:px-8 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap flex-shrink-0"
           >
             지금 무료로 시작하기
           </motion.button>

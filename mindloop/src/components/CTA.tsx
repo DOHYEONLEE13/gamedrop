@@ -31,7 +31,7 @@ export default function CTA() {
   }, []);
 
   return (
-    <section className="relative py-32 md:py-44 px-6 md:px-28 border-t border-border/30 overflow-hidden">
+    <section className="relative py-32 md:py-44 px-5 md:px-28 border-t border-border/30 overflow-hidden">
       {/* HLS Background Video */}
       <video
         ref={videoRef}
@@ -59,7 +59,7 @@ export default function CTA() {
 
         <motion.h2
           {...fadeUp(0.1)}
-          className="text-4xl md:text-6xl font-medium tracking-[-1.5px] leading-[1.1] mb-6"
+          className="text-[2rem] sm:text-4xl md:text-6xl font-medium tracking-[-1px] md:tracking-[-1.5px] leading-[1.1] mb-6"
         >
           서랍 속 게임,{" "}
           <span className="font-serif italic font-normal">지금</span>{" "}
@@ -68,7 +68,7 @@ export default function CTA() {
 
         <motion.p
           {...fadeUp(0.2)}
-          className="text-muted-foreground text-lg mb-10 max-w-md"
+          className="text-muted-foreground text-base md:text-lg mb-10 max-w-md"
         >
           회원가입 30초. 업로드 3초. 비용 0원.
           만든 게임이 내 컴퓨터에만 있을 이유는 없습니다.

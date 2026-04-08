@@ -45,7 +45,7 @@ export default function Mission() {
   const totalWords = p1Words.length + p2Words.length;
 
   return (
-    <section className="pt-0 pb-32 md:pb-44 px-6 md:px-28">
+    <section className="pt-0 pb-32 md:pb-44 px-5 md:px-28">
       {/* Video */}
       <motion.div {...fadeUp(0)} className="flex justify-center mb-20">
         <video
@@ -61,7 +61,7 @@ export default function Mission() {
 
       {/* Scroll-driven word reveal */}
       <div ref={containerRef} className="max-w-4xl mx-auto">
-        <p className="text-2xl md:text-4xl lg:text-5xl font-medium tracking-[-1px] leading-snug">
+        <p className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-medium tracking-[-0.5px] md:tracking-[-1px] leading-snug">
           {p1Words.map((word, i) => {
             const start = i / totalWords;
             const end = (i + 1) / totalWords;
@@ -79,7 +79,7 @@ export default function Mission() {
           })}
         </p>
 
-        <p className="text-xl md:text-2xl lg:text-3xl font-medium mt-10 leading-snug">
+        <p className="text-base sm:text-xl md:text-2xl lg:text-3xl font-medium mt-10 leading-snug">
           {p2Words.map((word, i) => {
             const globalIndex = p1Words.length + i;
             const start = globalIndex / totalWords;

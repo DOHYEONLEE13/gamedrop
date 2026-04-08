@@ -23,7 +23,7 @@ const problems = [
 ];
 
 function ProblemIcon({ type }: { type: string }) {
-  const size = 200;
+  const size = 160;
   const iconMap: Record<string, { letter: string; bg: string }> = {
     deploy: { letter: ">_", bg: "#ef4444" },
     domain: { letter: ".com", bg: "#f59e0b" },
@@ -53,10 +53,10 @@ function ProblemIcon({ type }: { type: string }) {
 
 export default function SearchChanged() {
   return (
-    <section className="px-6 md:px-28 pt-52 md:pt-64 pb-6 md:pb-9 text-center">
+    <section className="px-5 md:px-28 pt-32 md:pt-64 pb-6 md:pb-9 text-center">
       <motion.h2
         {...fadeUp(0)}
-        className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-2px] leading-[1.05] mb-6"
+        className="text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-1px] md:tracking-[-2px] leading-[1.1] mb-6"
       >
         게임은{" "}
         <span className="font-serif italic font-normal">완성했는데,</span>
@@ -66,7 +66,7 @@ export default function SearchChanged() {
 
       <motion.p
         {...fadeUp(0.1)}
-        className="text-muted-foreground text-lg max-w-2xl mx-auto mb-24"
+        className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-16 md:mb-24"
       >
         바이브 코더 68%가 게임을 다 만들고도 공유하지 못합니다. 이유는 항상 같은
         3가지입니다.

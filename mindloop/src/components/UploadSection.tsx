@@ -305,7 +305,7 @@ export default function UploadSection() {
             transition={{ duration: 0.6, ease: "easeOut" as const }}
             className="text-center mb-10"
           >
-            <h1 className="text-4xl md:text-5xl font-medium tracking-[-1.5px] leading-[1.1] mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-[-1px] md:tracking-[-1.5px] leading-[1.1] mb-3">
               서랍 속 게임,{" "}
               <span className="font-serif italic font-normal">지금</span> 꺼내세요
             </h1>
