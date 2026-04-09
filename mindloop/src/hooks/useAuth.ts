@@ -73,7 +73,7 @@ export function useAuth() {
       const msg = error.message;
       if (msg.includes("username_taken")) throw new Error("이미 사용 중인 아이디입니다");
       if (msg.includes("username_too_short")) throw new Error("아이디는 3자 이상이어야 합니다");
-      if (msg.includes("password_too_short")) throw new Error("비밀번호는 4자 이상이어야 합니다");
+      if (msg.includes("password_too_short")) throw new Error("비밀번호는 8자 이상이어야 합니다");
       throw new Error(msg);
     }
     const token = data as string;

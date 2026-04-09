@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/utils";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 export default function PrivacyPolicyPage() {
   return (
     <>
+      <SEO title="개인정보 처리방침" description="GameDrop의 개인정보 처리방침입니다." path="/privacy" />
       <section className="pt-24 md:pt-32 pb-16 px-5 md:px-28 max-w-4xl mx-auto">
         <motion.h1
           {...fadeUp(0)}

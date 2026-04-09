@@ -151,7 +151,7 @@ export interface Database {
         };
         Returns: void;
       };
-      admin_list_games: { Args: { p_token: string }; Returns: (Game & { uploader_username: string | null })[] };
+      admin_list_games: { Args: { p_token: string }; Returns: (Game & { uploader_username: string | null; rejection_reason: string | null })[] };
       admin_update_game_status: {
         Args: { p_token: string; p_game_id: string; p_new_status: string };
         Returns: void;

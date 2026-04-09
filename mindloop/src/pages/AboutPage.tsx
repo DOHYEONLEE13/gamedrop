@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/utils";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 export default function AboutPage() {
   return (
     <>
+      <SEO title="GameDrop 소개" description="GameDrop은 누구나 HTML 게임을 무료로 업로드하고 배포할 수 있는 플랫폼입니다." path="/about" />
       <section className="pt-24 md:pt-32 pb-16 px-5 md:px-28 max-w-4xl mx-auto">
         <motion.h1
           {...fadeUp(0)}

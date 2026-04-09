@@ -5,10 +5,12 @@ import Solution from "@/components/Solution";
 import CTA from "@/components/CTA";
 import AdBanner from "@/components/AdBanner";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 export default function HomePage() {
   return (
     <>
+      <SEO path="/" />
       <Hero />
       <SearchChanged />
       <Mission />

@@ -9,7 +9,7 @@ import GamePlayModal from "@/components/GamePlayModal";
 import { getSessionToken } from "@/hooks/useAuth";
 import type { Game } from "@/types/database";
 
-type AdminGame = Game & { uploader_username?: string | null };
+type AdminGame = Game & { uploader_username?: string | null; rejection_reason?: string | null };
 
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";

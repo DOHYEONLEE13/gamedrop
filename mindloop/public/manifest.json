@@ -1,0 +1,17 @@
+{
+  "name": "GameDrop - HTML 게임 업로드 & 플레이 플랫폼",
+  "short_name": "GameDrop",
+  "description": "HTML 게임을 드래그 앤 드롭으로 업로드하고, 브라우저에서 바로 플레이하세요.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

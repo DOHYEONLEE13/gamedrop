@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import GamePlayModal from "@/components/GamePlayModal";
+import SEO from "@/components/SEO";
 import type { Game } from "@/types/database";
 
 const HERO_VIDEO_URL =
@@ -157,6 +158,7 @@ export default function MyGamesPage() {
 
   return (
     <>
+      <SEO title="내 게임" description="저장한 게임, 플레이 기록, 좋아요 목록을 확인하세요." path="/my-games" noindex />
       <section className="relative min-h-screen overflow-hidden">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0"><source src={HERO_VIDEO_URL} type="video/mp4" /></video>
         <div className="absolute inset-0 bg-background/70 z-[1]" />

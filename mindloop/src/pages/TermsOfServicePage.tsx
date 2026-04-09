@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/utils";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 export default function TermsOfServicePage() {
   return (
     <>
+      <SEO title="이용약관" description="GameDrop 서비스 이용약관입니다." path="/terms" />
       <section className="pt-24 md:pt-32 pb-16 px-5 md:px-28 max-w-4xl mx-auto">
         <motion.h1
           {...fadeUp(0)}
