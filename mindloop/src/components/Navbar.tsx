@@ -11,35 +11,6 @@ interface NavItem {
   to: string;
 }
 
-function InstagramIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-      <circle cx="12" cy="12" r="5.5" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function LinkedinIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-      <rect width="4" height="12" x="2" y="9" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-}
-
-function TwitterIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4l7.07 8.58L4 20h2l5.64-5.94L16 20h4l-7.43-8.96L19.71 4H18l-5.29 5.58L8 4H4z" />
-    </svg>
-  );
-}
-
-const socialIcons = [InstagramIcon, LinkedinIcon, TwitterIcon];
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
@@ -124,14 +95,6 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden lg:flex items-center gap-2">
-            {socialIcons.map((Icon, i) => (
-              <button key={i} className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200">
-                <Icon />
-              </button>
-            ))}
-          </div>
-
           <LanguageSwitcher />
 
           {loading ? (
