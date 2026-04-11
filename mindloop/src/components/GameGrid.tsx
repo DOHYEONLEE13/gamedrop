@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useGames } from "@/hooks/useGames";
 import { games as mockGames } from "@/data/games";
 import type { Game } from "@/types/database";
@@ -9,21 +11,16 @@ import GamePlayModal from "./GamePlayModal";
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
 
-const categories = [
-  "장애물 게임", "인기 있는 게임", "어드벤쳐 게임", "모바일 게임",
-  "스킬 게임", "액션 게임", "Brainrot Games", "운전 게임",
-  "남성용 게임", "동물 게임", "마우스 게임", "멋진 게임",
-  "전쟁 게임", "플랫폼 게임", "3D 게임", "아케이드 게임",
-  "시뮬레이션 게임", "재미있는 게임", "온라인 게임", "협동 게임",
-  "타이쿤 게임", "총 게임", "멀티플레이어 게임", "격투 게임",
-  "고양이 게임", "미친 게임", "두뇌 게임", "플래시 게임",
-  "수박 게임", "블록 게임", "달리기 게임", "모든 카테고리",
+const categoryKeys = [
+  "grid.obstacle", "grid.popular", "grid.adventure", "grid.mobile",
+  "grid.skill", "grid.action", "grid.brainrot", "grid.driving",
+  "grid.boys", "grid.animal", "grid.mouse", "grid.cool",
+  "grid.war", "grid.platform", "grid.3d", "grid.arcade",
+  "grid.simulation", "grid.fun", "grid.online", "grid.coop",
+  "grid.tycoon", "grid.gun", "grid.multiplayer", "grid.fighting",
+  "grid.cat", "grid.crazy", "grid.brain", "grid.flash",
+  "grid.watermelon", "grid.block", "grid.runner", "grid.allCategories",
 ];
-
-const categoryLabel: Record<string, string> = {
-  action: "액션", puzzle: "퍼즐", rpg: "RPG",
-  simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-};
 
 // Normalize DB game or mock game into a common shape for rendering
 interface DisplayGame {
@@ -37,12 +34,12 @@ interface DisplayGame {
   dbGame: Game | null;
 }
 
-function toDisplayGame(game: Game, index: number): DisplayGame {
+function toDisplayGame(game: Game, index: number, t: TFunction): DisplayGame {
   return {
     id: game.id,
     title: game.title,
     thumbnail: game.thumbnail_url || `https://picsum.photos/seed/${index + 200}/400/400`,
-    category: categoryLabel[game.category] || game.category,
+    category: t(`category.${game.category}`, { defaultValue: game.category }),
     playtime: game.playtime || "",
     type: game.type,
     dbGame: game,
@@ -62,13 +59,14 @@ function mockToDisplayGame(game: MockGame): DisplayGame {
 }
 
 export default function GameGrid() {
+  const { t } = useTranslation();
   const { games: dbGames, loading } = useGames();
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
   // Use DB games if available, fallback to mock
   const displayGames: DisplayGame[] =
     dbGames.length > 0
-      ? dbGames.map((g, i) => toDisplayGame(g, i))
+      ? dbGames.map((g, i) => toDisplayGame(g, i, t))
       : mockGames.map(mockToDisplayGame);
 
   return (
@@ -138,12 +136,12 @@ export default function GameGrid() {
 
           {/* Category Tags */}
           <div className="mt-12 flex flex-wrap gap-2 justify-center">
-            {categories.map((cat) => (
+            {categoryKeys.map((key) => (
               <button
-                key={cat}
+                key={key}
                 className="px-4 py-2 rounded-full text-sm text-muted-foreground border border-border/40 hover:text-foreground hover:border-foreground/40 transition-colors duration-200"
               >
-                {cat}
+                {t(key, { defaultValue: key.split(".")[1] })}
               </button>
             ))}
           </div>

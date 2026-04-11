@@ -1,22 +1,25 @@
 import { Link } from "react-router-dom";
-
-const footerLinks = [
-  { label: "소개", to: "/about" },
-  { label: "개인정보처리방침", to: "/privacy" },
-  { label: "이용약관", to: "/terms" },
-  { label: "문의", to: "/contact" },
-];
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
+  const footerLinks = [
+    { label: t("footer.about"), to: "/about" },
+    { label: t("footer.privacy"), to: "/privacy" },
+    { label: t("footer.terms"), to: "/terms" },
+    { label: t("footer.contact"), to: "/contact" },
+  ];
+
   return (
     <footer className="py-12 px-8 md:px-28 flex flex-col md:flex-row items-center justify-between gap-4">
       <p className="text-muted-foreground text-sm">
-        &copy; 2026 GameDrop. All rights reserved.
+        {t("footer.copyright")}
       </p>
       <div className="flex items-center gap-6">
         {footerLinks.map((link) => (
           <Link
-            key={link.label}
+            key={link.to}
             to={link.to}
             className="text-muted-foreground text-sm hover:text-foreground transition-colors duration-200"
           >

@@ -1,24 +1,26 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { fadeUp } from "@/lib/utils";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 
 export default function PrivacyPolicyPage() {
+  const { t } = useTranslation();
   return (
     <>
-      <SEO title="개인정보 처리방침" description="GameDrop의 개인정보 처리방침입니다." path="/privacy" />
+      <SEO title={t("seo.privacyTitle")} description={t("privacy.title")} path="/privacy" />
       <section className="pt-24 md:pt-32 pb-16 px-5 md:px-28 max-w-4xl mx-auto">
         <motion.h1
           {...fadeUp(0)}
           className="text-[2rem] sm:text-4xl md:text-5xl font-medium tracking-[-1px] leading-[1.1] mb-4"
         >
-          개인정보처리방침
+          {t("privacy.title")}
         </motion.h1>
         <motion.p
           {...fadeUp(0.05)}
           className="text-muted-foreground text-sm mb-12"
         >
-          최종 수정일: 2026년 4월 9일
+          {t("privacy.lastUpdated")}
         </motion.p>
 
         <motion.div

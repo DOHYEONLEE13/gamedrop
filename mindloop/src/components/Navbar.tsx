@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import AuthModal from "./AuthModal";
@@ -9,13 +10,6 @@ interface NavItem {
   label: string;
   to: string;
 }
-
-const navLinks: NavItem[] = [
-  { label: "Shorts", to: "/shorts" },
-  { label: "Games", to: "/games" },
-  { label: "Search", to: "/search" },
-  { label: "Upload", to: "/upload" },
-];
 
 function InstagramIcon() {
   return (
@@ -47,15 +41,43 @@ function TwitterIcon() {
 
 const socialIcons = [InstagramIcon, LinkedinIcon, TwitterIcon];
 
+function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const isKo = i18n.language.startsWith("ko");
+
+  const toggle = () => {
+    const next = isKo ? "en" : "ko";
+    i18n.changeLanguage(next);
+    document.documentElement.lang = next;
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors duration-200"
+      title={isKo ? "Switch to English" : "한국어로 전환"}
+    >
+      {isKo ? "EN" : "KO"}
+    </button>
+  );
+}
+
 export default function Navbar() {
   const location = useLocation();
+  const { t } = useTranslation();
   const { user, isAdmin, logout, loading } = useAuthContext();
   const { toast } = useToast();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  const navLinks: NavItem[] = [
+    { label: t("nav.shorts"), to: "/shorts" },
+    { label: t("nav.games"), to: "/games" },
+    { label: t("nav.search"), to: "/search" },
+    { label: t("nav.upload"), to: "/upload" },
+  ];
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -77,7 +99,6 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: "easeOut" as const }}
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 md:px-28 py-4"
       >
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center w-7 h-7 rounded-full border-2 border-foreground/60">
             <div className="w-3 h-3 rounded-full border border-foreground/60" />
@@ -85,24 +106,15 @@ export default function Navbar() {
           <span className="font-bold text-base text-foreground">GameDrop</span>
         </Link>
 
-        {/* Nav Links */}
         <div className="hidden md:flex items-center gap-1 text-sm">
           {navLinks.map((link, i) => {
             const isActive = location.pathname === link.to;
             return (
-              <span key={link.label} className="flex items-center gap-1">
-                {i > 0 && (
-                  <span className="text-muted-foreground mx-1 select-none">
-                    &bull;
-                  </span>
-                )}
+              <span key={link.to} className="flex items-center gap-1">
+                {i > 0 && <span className="text-muted-foreground mx-1 select-none">&bull;</span>}
                 <Link
                   to={link.to}
-                  className={`transition-colors duration-200 ${
-                    isActive
-                      ? "text-foreground font-medium"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`transition-colors duration-200 ${isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {link.label}
                 </Link>
@@ -111,33 +123,26 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Right side: Social + Auth */}
         <div className="flex items-center gap-2">
-          {/* Social icons (hide on small screens to save space) */}
           <div className="hidden lg:flex items-center gap-2">
             {socialIcons.map((Icon, i) => (
-              <button
-                key={i}
-                className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200"
-              >
+              <button key={i} className="liquid-glass w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200">
                 <Icon />
               </button>
             ))}
           </div>
 
-          {/* Auth area */}
+          <LanguageSwitcher />
+
           {loading ? (
             <div className="w-10 h-10 rounded-full bg-secondary/50 animate-pulse" />
           ) : user ? (
-            /* Avatar dropdown */
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 pl-3 pr-1 py-1 rounded-full hover:bg-white/5 transition-colors"
               >
-                <span className="text-sm text-muted-foreground hidden sm:block">
-                  {displayName}
-                </span>
+                <span className="text-sm text-muted-foreground hidden sm:block">{displayName}</span>
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm ${isAdmin ? "bg-accent text-accent-foreground" : "bg-foreground text-background"}`}>
                   {avatarLetter}
                 </div>
@@ -153,74 +158,39 @@ export default function Navbar() {
                   <div className="px-4 py-3 border-b border-border/30">
                     <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
                     {isAdmin && (
-                      <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/20 text-accent">
-                        ADMIN
-                      </span>
+                      <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/20 text-accent">ADMIN</span>
                     )}
                   </div>
-
                   <div className="py-1">
-                    <Link
-                      to={isAdmin ? "/admin" : "/dashboard"}
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="18" height="18" x="3" y="3" rx="2" />
-                        <path d="M3 9h18" />
-                        <path d="M9 21V9" />
-                      </svg>
-                      {isAdmin ? "관리자 대시보드" : "내 대시보드"}
+                    <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+                      {isAdmin ? t("nav.adminDashboard") : t("nav.myDashboard")}
                     </Link>
-                    <Link
-                      to="/my-games"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      내 게임
+                    <Link to="/my-games" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                      {t("nav.myGames")}
                     </Link>
                   </div>
-
                   <div className="border-t border-border/30 py-1">
                     <button
-                      onClick={() => {
-                        logout();
-                        toast("로그아웃 완료", "info");
-                        setDropdownOpen(false);
-                      }}
+                      onClick={() => { logout(); toast(t("common.logoutDone"), "info"); setDropdownOpen(false); }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-red-400 hover:bg-secondary/50 transition-colors"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                      </svg>
-                      로그아웃
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                      {t("common.logout")}
                     </button>
                   </div>
                 </motion.div>
               )}
             </div>
           ) : (
-            /* Login button */
-            <button
-              onClick={() => setAuthModalOpen(true)}
-              className="px-5 py-2 rounded-full bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors"
-            >
-              로그인
+            <button onClick={() => setAuthModalOpen(true)} className="px-5 py-2 rounded-full bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors">
+              {t("common.login")}
             </button>
           )}
         </div>
       </motion.nav>
-
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-      />
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </>
   );
 }

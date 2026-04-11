@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
@@ -9,15 +10,16 @@ import { getSessionToken } from "@/hooks/useAuth";
 import type { Game } from "@/types/database";
 
 const CATEGORIES = [
-  { value: "action", label: "액션" },
-  { value: "puzzle", label: "퍼즐" },
-  { value: "rpg", label: "RPG" },
-  { value: "simulation", label: "시뮬레이션" },
-  { value: "strategy", label: "전략" },
-  { value: "casual", label: "캐주얼" },
+  { value: "action" },
+  { value: "puzzle" },
+  { value: "rpg" },
+  { value: "simulation" },
+  { value: "strategy" },
+  { value: "casual" },
 ];
 
 function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -40,9 +42,9 @@ function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose:
   if (!game) return null;
 
   const handleSave = async () => {
-    if (!title.trim()) { toast("제목을 입력하세요", "error"); return; }
+    if (!title.trim()) { toast(t("dashboard.enterTitle"), "error"); return; }
     setSaving(true);
-    const tagArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
+    const tagArr = tags.split(",").map((tag) => tag.trim()).filter(Boolean);
     const { error } = await supabase.rpc("uploader_update_game", {
       p_token: getSessionToken(),
       p_game_id: game.id,
@@ -54,8 +56,8 @@ function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose:
       p_tags: tagArr.length ? tagArr : null,
     });
     setSaving(false);
-    if (error) { toast(error.message || "수정 실패", "error"); return; }
-    toast("수정 완료", "success");
+    if (error) { toast(error.message || t("dashboard.editFailed"), "error"); return; }
+    toast(t("dashboard.editSuccess"), "success");
     onSaved();
     onClose();
   };
@@ -77,38 +79,38 @@ function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose:
           className="w-full max-w-lg bg-card/95 backdrop-blur-xl border border-border/40 rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold">게임 정보 수정</h2>
+            <h2 className="text-lg font-semibold">{t("dashboard.editTitle")}</h2>
             <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1.5">제목</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.titleLabel")}</label>
               <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40" />
             </div>
 
             <div>
-              <label className="block text-xs text-muted-foreground mb-1.5">설명</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.descLabel")}</label>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40 resize-none" />
             </div>
 
             <div>
-              <label className="block text-xs text-muted-foreground mb-1.5">유형</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.typeLabel")}</label>
               <div className="flex gap-2">
-                {(["shortform", "longform"] as const).map((t) => (
-                  <button key={t} onClick={() => setType(t)} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === t ? "bg-foreground text-background" : "bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground"}`}>
-                    {t === "shortform" ? "숏폼" : "롱폼"}
+                {(["shortform", "longform"] as const).map((typeOpt) => (
+                  <button key={typeOpt} onClick={() => setType(typeOpt)} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === typeOpt ? "bg-foreground text-background" : "bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground"}`}>
+                    {t(`gameType.${typeOpt}`)}
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-muted-foreground mb-1.5">카테고리</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.categoryLabel")}</label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((c) => (
                   <button key={c.value} onClick={() => setCategory(c.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${category === c.value ? "bg-foreground text-background" : "bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground"}`}>
-                    {c.label}
+                    {t(`category.${c.value}`)}
                   </button>
                 ))}
               </div>
@@ -116,20 +118,20 @@ function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose:
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">플레이타임</label>
-                <input value={playtime} onChange={(e) => setPlaytime(e.target.value)} placeholder="3분" className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40" />
+                <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.playtimeLabel")}</label>
+                <input value={playtime} onChange={(e) => setPlaytime(e.target.value)} placeholder={t("upload.playtimePlaceholder")} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40" />
               </div>
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">태그 (쉼표 구분)</label>
-                <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="액션, 아케이드" className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40" />
+                <label className="block text-xs text-muted-foreground mb-1.5">{t("dashboard.tagsLabel")}</label>
+                <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder={t("upload.tagsPlaceholder")} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-foreground/40" />
               </div>
             </div>
           </div>
 
           <div className="flex gap-2 mt-6">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">취소</button>
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t("common.cancel")}</button>
             <button onClick={handleSave} disabled={saving} className="flex-1 px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors disabled:opacity-50">
-              {saving ? "저장 중..." : "저장"}
+              {saving ? t("common.saving") : t("common.save")}
             </button>
           </div>
         </motion.div>
@@ -141,11 +143,6 @@ function EditGameModal({ game, onClose, onSaved }: { game: Game | null; onClose:
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
 
-const categoryLabel: Record<string, string> = {
-  action: "액션", puzzle: "퍼즐", rpg: "RPG",
-  simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-};
-
 interface UploaderStats {
   total_games: number;
   total_views: number;
@@ -155,6 +152,7 @@ interface UploaderStats {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user, isAdmin, loading: authLoading } = useAuthContext();
   const navigate = useNavigate();
   const [stats, setStats] = useState<UploaderStats>({
@@ -197,9 +195,9 @@ export default function DashboardPage() {
         {/* Greeting */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            안녕하세요, <span className="font-serif italic">{user.username}</span>님 👋
+            {t("dashboard.greeting", { name: user.username })} 👋
           </h1>
-          <p className="text-muted-foreground text-sm">업로드한 게임의 성과를 한눈에 확인하세요</p>
+          <p className="text-muted-foreground text-sm">{t("dashboard.subtitle")}</p>
         </motion.div>
 
         {/* Stat cards with count-up */}
@@ -209,7 +207,7 @@ export default function DashboardPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>
             </div>
             <p className="text-3xl font-bold text-foreground"><CountUp value={stats.total_games} /></p>
-            <p className="text-muted-foreground text-xs mt-1">내가 올린 게임</p>
+            <p className="text-muted-foreground text-xs mt-1">{t("dashboard.myUploads")}</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
@@ -217,7 +215,7 @@ export default function DashboardPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
             </div>
             <p className="text-3xl font-bold text-foreground"><CountUp value={stats.total_views} /></p>
-            <p className="text-muted-foreground text-xs mt-1">총 조회수</p>
+            <p className="text-muted-foreground text-xs mt-1">{t("dashboard.totalViews")}</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
@@ -225,7 +223,7 @@ export default function DashboardPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>
             </div>
             <p className="text-3xl font-bold text-foreground"><CountUp value={stats.total_likes} /></p>
-            <p className="text-muted-foreground text-xs mt-1">총 좋아요</p>
+            <p className="text-muted-foreground text-xs mt-1">{t("dashboard.totalLikes")}</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-5">
@@ -233,7 +231,7 @@ export default function DashboardPage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
             </div>
             <p className="text-3xl font-bold text-foreground"><CountUp value={stats.pending_count} /></p>
-            <p className="text-muted-foreground text-xs mt-1">승인 대기 중</p>
+            <p className="text-muted-foreground text-xs mt-1">{t("dashboard.pendingCount")}</p>
           </motion.div>
         </div>
 
@@ -252,8 +250,8 @@ export default function DashboardPage() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm font-semibold">"{g.title}" 게시 거절</p>
-                    <p className="text-muted-foreground text-xs mt-1">관리자 사유: {g.rejection_reason}</p>
+                    <p className="text-foreground text-sm font-semibold">{t("dashboard.rejectionTitle", { title: g.title })}</p>
+                    <p className="text-muted-foreground text-xs mt-1">{t("dashboard.rejectionReason", { reason: g.rejection_reason })}</p>
                   </div>
                   <button
                     onClick={async () => {
@@ -262,7 +260,7 @@ export default function DashboardPage() {
                     }}
                     className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                   >
-                    확인
+                    {t("common.confirm")}
                   </button>
                 </div>
               ))}
@@ -277,8 +275,8 @@ export default function DashboardPage() {
           className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden"
         >
           <div className="px-5 py-4 border-b border-white/10">
-            <h2 className="text-foreground font-semibold">게임별 성과</h2>
-            <p className="text-muted-foreground text-xs mt-0.5">조회수 기준 랭킹</p>
+            <h2 className="text-foreground font-semibold">{t("dashboard.performance")}</h2>
+            <p className="text-muted-foreground text-xs mt-0.5">{t("dashboard.performanceDesc")}</p>
           </div>
           {loading ? (
             <div className="py-16 flex justify-center">
@@ -286,8 +284,8 @@ export default function DashboardPage() {
             </div>
           ) : games.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground text-sm">
-              아직 업로드한 게임이 없습니다.{" "}
-              <button onClick={() => navigate("/upload")} className="text-foreground underline">지금 업로드하기</button>
+              {t("dashboard.noUploads")}{" "}
+              <button onClick={() => navigate("/upload")} className="text-foreground underline">{t("dashboard.uploadNow")}</button>
             </div>
           ) : (
             <div className="p-5 space-y-4">
@@ -313,14 +311,14 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between mb-1.5 gap-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <p className="text-foreground text-sm font-medium truncate">{g.title}</p>
-                            <span className="text-[10px] text-muted-foreground flex-shrink-0">{categoryLabel[g.category] || g.category}</span>
+                            <span className="text-[10px] text-muted-foreground flex-shrink-0">{t(`category.${g.category}`)}</span>
                             <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
                               g.status === "live" ? "bg-green-500/15 text-green-400"
                               : g.status === "pending" ? "bg-yellow-500/15 text-yellow-400"
                               : g.status === "rejected" ? "bg-red-500/15 text-red-400"
                               : "bg-gray-500/15 text-gray-400"
                             }`}>
-                              {g.status === "live" ? "게시중" : g.status === "pending" ? "대기" : g.status === "rejected" ? "거절됨" : "숨김"}
+                              {g.status === "live" ? t("status.live") : g.status === "pending" ? t("status.pending") : g.status === "rejected" ? t("status.rejected") : t("status.draft")}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
@@ -330,7 +328,7 @@ export default function DashboardPage() {
                               onClick={() => setEditing(g)}
                               className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
                             >
-                              수정
+                              {t("common.edit")}
                             </button>
                           </div>
                         </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Hls from "hls.js";
+import { useTranslation } from "react-i18next";
 import { fadeUp } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/AuthContext";
 import AuthModal from "./AuthModal";
@@ -13,6 +14,7 @@ export default function CTA() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
 
   const handleCta = () => {
@@ -72,17 +74,16 @@ export default function CTA() {
           {...fadeUp(0.1)}
           className="text-[2rem] sm:text-4xl md:text-6xl font-medium tracking-[-1px] md:tracking-[-1.5px] leading-[1.1] mb-6"
         >
-          서랍 속 게임,{" "}
-          <span className="font-serif italic font-normal">지금</span>{" "}
-          꺼내세요
+          {t("cta.title1")}{" "}
+          <span className="font-serif italic font-normal">{t("cta.title2")}</span>{" "}
+          {t("cta.title3")}
         </motion.h2>
 
         <motion.p
           {...fadeUp(0.2)}
           className="text-muted-foreground text-base md:text-lg mb-10 max-w-md"
         >
-          회원가입 30초. 업로드 3초. 비용 0원.
-          만든 게임이 내 컴퓨터에만 있을 이유는 없습니다.
+          {t("cta.subtitle")}
         </motion.p>
 
         <motion.div {...fadeUp(0.3)} className="flex flex-wrap gap-4 justify-center">
@@ -92,7 +93,7 @@ export default function CTA() {
             onClick={handleCta}
             className="bg-foreground text-background rounded-lg px-8 py-3.5 text-sm font-semibold"
           >
-            무료로 시작하기
+            {t("cta.startFree")}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.03 }}
@@ -100,7 +101,7 @@ export default function CTA() {
             onClick={handleCta}
             className="liquid-glass rounded-lg px-8 py-3.5 text-sm font-semibold text-foreground"
           >
-            게임 업로드하기
+            {t("cta.uploadGame")}
           </motion.button>
         </motion.div>
       </div>

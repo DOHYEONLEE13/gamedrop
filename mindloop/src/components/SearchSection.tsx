@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { games as mockGames } from "@/data/games";
 import { useGames } from "@/hooks/useGames";
 import type { Game as DbGame } from "@/types/database";
@@ -75,11 +76,6 @@ function getSizeClass(index: number) {
   }
 }
 
-const categoryLabel: Record<string, string> = {
-  action: "액션", puzzle: "퍼즐", rpg: "RPG",
-  simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-};
-
 /* ── Popular categories for quick search ── */
 const quickTags = ["액션", "퍼즐", "캐주얼", "RPG", "전략", "숏폼", "롱폼"];
 
@@ -96,6 +92,7 @@ interface DisplayGame {
 
 /* ── Main Component ── */
 export default function SearchSection() {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [selectedGame, setSelectedGame] = useState<DbGame | null>(null);
@@ -109,7 +106,7 @@ export default function SearchSection() {
         id: g.id,
         title: g.title,
         thumbnail: g.thumbnail_url || `https://picsum.photos/seed/${i + 200}/400/400`,
-        category: categoryLabel[g.category] || g.category,
+        category: t(`category.${g.category}`, g.category),
         playtime: g.playtime || "",
         type: g.type,
         dbGame: g,
@@ -182,10 +179,10 @@ export default function SearchSection() {
             className="text-center mb-8"
           >
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              게임 검색
+              {t("search.title")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {allGames.length}개의 게임 중에서 원하는 게임을 찾아보세요
+              {t("search.subtitle", { count: allGames.length })}
             </p>
           </motion.div>
 
@@ -225,7 +222,7 @@ export default function SearchSection() {
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder="찾고 싶은 게임을 입력하세요"
+                  placeholder={t("search.placeholder")}
                   className="flex-1 bg-transparent outline-none text-foreground text-base placeholder:text-muted-foreground/60"
                 />
                 {/* Clear button */}
@@ -296,7 +293,7 @@ export default function SearchSection() {
                       <SparkleIcon />
                     </motion.div>
                     <p className="text-muted-foreground text-sm">
-                      인기 게임을 둘러보세요
+                      {t("search.browsePopular")}
                     </p>
                   </div>
 
@@ -358,7 +355,7 @@ export default function SearchSection() {
                   {/* Result count */}
                   <div className="mb-6 flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">
-                      <span className="text-foreground font-semibold">{filteredGames.length}</span>개의 게임을 찾았습니다
+                      {t("search.foundGames", { count: filteredGames.length })}
                     </span>
                   </div>
 
@@ -454,10 +451,10 @@ export default function SearchSection() {
                     </motion.div>
                     <div>
                       <p className="text-foreground font-semibold text-lg mb-1">
-                        찾으시는 게임이 서랍 속에 없네요!
+                        {t("search.noResultsTitle")}
                       </p>
                       <p className="text-muted-foreground text-sm">
-                        다른 키워드로 검색하거나, 아래 추천 게임을 즐겨보세요
+                        {t("search.noResultsSubtitle")}
                       </p>
                     </div>
                   </div>
@@ -468,7 +465,7 @@ export default function SearchSection() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74L12 2z" />
                       </svg>
-                      이런 게임은 어떠세요?
+                      {t("search.recommendations")}
                     </span>
                   </div>
 

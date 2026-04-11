@@ -1,5 +1,6 @@
 import { useState, useMemo, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 
@@ -17,16 +18,16 @@ interface PasswordCheck {
   score: 0 | 1 | 2 | 3 | 4;
   label: string;
   color: string;
-  reason: string | null;
+  reasonKey: string | null;
 }
 
 function evaluatePassword(pw: string): PasswordCheck {
-  if (!pw) return { score: 0, label: "", color: "bg-white/10", reason: null };
+  if (!pw) return { score: 0, label: "", color: "bg-white/10", reasonKey: null };
   if (COMMON_PASSWORDS.has(pw.toLowerCase())) {
-    return { score: 1, label: "매우 약함", color: "bg-red-500", reason: "자주 쓰이는 비밀번호입니다" };
+    return { score: 1, label: "auth.strengthVeryWeak", color: "bg-red-500", reasonKey: "auth.commonPassword" };
   }
   if (pw.length < 8) {
-    return { score: 1, label: "매우 약함", color: "bg-red-500", reason: "8자 이상 필요합니다" };
+    return { score: 1, label: "auth.strengthVeryWeak", color: "bg-red-500", reasonKey: "auth.minChars" };
   }
   const hasLower = /[a-z]/.test(pw);
   const hasUpper = /[A-Z]/.test(pw);
@@ -34,15 +35,15 @@ function evaluatePassword(pw: string): PasswordCheck {
   const hasSymbol = /[^A-Za-z0-9]/.test(pw);
   const variety = [hasLower || hasUpper, hasDigit, hasSymbol, hasUpper && hasLower].filter(Boolean).length;
   if (!hasDigit || !(hasLower || hasUpper)) {
-    return { score: 2, label: "약함", color: "bg-orange-500", reason: "영문과 숫자를 함께 사용하세요" };
+    return { score: 2, label: "auth.strengthWeak", color: "bg-orange-500", reasonKey: "auth.useLettersAndNumbers" };
   }
   if (pw.length >= 12 && variety >= 3) {
-    return { score: 4, label: "강함", color: "bg-green-500", reason: null };
+    return { score: 4, label: "auth.strengthStrong", color: "bg-green-500", reasonKey: null };
   }
   if (pw.length >= 10 && variety >= 2) {
-    return { score: 3, label: "보통", color: "bg-yellow-500", reason: null };
+    return { score: 3, label: "auth.strengthNormal", color: "bg-yellow-500", reasonKey: null };
   }
-  return { score: 2, label: "약함", color: "bg-orange-500", reason: "더 길게 만들거나 기호를 추가하세요" };
+  return { score: 2, label: "auth.strengthWeak", color: "bg-orange-500", reasonKey: "auth.addMoreVariety" };
 }
 
 interface AuthModalProps {
@@ -56,6 +57,7 @@ export default function AuthModal({
   onClose,
   initialTab = "login",
 }: AuthModalProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,15 +76,15 @@ export default function AuthModal({
     setError("");
   };
 
-  const switchTab = (t: Tab) => {
-    setTab(t);
+  const switchTab = (tab: Tab) => {
+    setTab(tab);
     resetForm();
   };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setError("아이디와 비밀번호를 입력하세요");
+      setError(t("auth.enterCredentials"));
       return;
     }
     setLoading(true);
@@ -91,8 +93,8 @@ export default function AuthModal({
       const user = await login(username, password);
       toast(
         user.role === "admin"
-          ? `관리자 ${user.username}님 환영합니다!`
-          : `${user.username}님 환영합니다!`,
+          ? t("auth.welcomeAdmin", { name: user.username })
+          : t("auth.welcome", { name: user.username }),
         "success"
       );
       resetForm();
@@ -107,22 +109,22 @@ export default function AuthModal({
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     if (!username || username.length < 3) {
-      setError("아이디는 3자 이상이어야 합니다");
+      setError(t("auth.usernameTooShort"));
       return;
     }
     if (!password || password.length < 8) {
-      setError("비밀번호는 8자 이상이어야 합니다");
+      setError(t("auth.passwordTooShort"));
       return;
     }
     if (pwCheck.score < 3) {
-      setError(pwCheck.reason || "비밀번호가 너무 약합니다 (영문 + 숫자 8자 이상 권장)");
+      setError(pwCheck.reasonKey ? t(pwCheck.reasonKey) : t("auth.passwordTooWeak"));
       return;
     }
     setLoading(true);
     setError("");
     try {
       const user = await register(username, password);
-      toast(`${user.username}님 환영합니다!`, "success");
+      toast(t("auth.welcome", { name: user.username }), "success");
       resetForm();
       onClose();
     } catch (err: any) {
@@ -133,8 +135,8 @@ export default function AuthModal({
   };
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "login", label: "로그인" },
-    { key: "signup", label: "회원가입" },
+    { key: "login", label: t("common.login") },
+    { key: "signup", label: t("common.signup") },
   ];
 
   return (
@@ -177,17 +179,17 @@ export default function AuthModal({
             </div>
 
             <div className="flex rounded-xl bg-secondary/50 p-1 mb-6">
-              {tabs.map((t) => (
+              {tabs.map((tabItem) => (
                 <button
-                  key={t.key}
-                  onClick={() => switchTab(t.key)}
+                  key={tabItem.key}
+                  onClick={() => switchTab(tabItem.key)}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    tab === t.key
+                    tab === tabItem.key
                       ? "bg-foreground text-background shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t.label}
+                  {tabItem.label}
                 </button>
               ))}
             </div>
@@ -207,23 +209,23 @@ export default function AuthModal({
 
             <form onSubmit={tab === "login" ? handleLogin : handleSignup} className="space-y-4">
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">아이디</label>
+                <label className="block text-xs text-muted-foreground mb-1.5">{t("auth.username")}</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="아이디"
+                  placeholder={t("auth.username")}
                   autoComplete="username"
                   className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-foreground text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground/30 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs text-muted-foreground mb-1.5">비밀번호</label>
+                <label className="block text-xs text-muted-foreground mb-1.5">{t("auth.password")}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="비밀번호"
+                  placeholder={t("auth.password")}
                   autoComplete={tab === "login" ? "current-password" : "new-password"}
                   className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-foreground text-sm placeholder:text-muted-foreground/50 outline-none focus:border-foreground/30 transition-colors"
                 />
@@ -241,14 +243,14 @@ export default function AuthModal({
                     </div>
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[10px] text-muted-foreground">
-                        {pwCheck.reason || "영문 + 숫자 8자 이상 권장"}
+                        {pwCheck.reasonKey ? t(pwCheck.reasonKey) : t("auth.recommendedFormat")}
                       </span>
                       <span className={`text-[10px] font-semibold ${
                         pwCheck.score >= 3 ? "text-green-400"
                         : pwCheck.score === 2 ? "text-orange-400"
                         : "text-red-400"
                       }`}>
-                        {pwCheck.label}
+                        {pwCheck.label ? t(pwCheck.label) : ""}
                       </span>
                     </div>
                   </div>
@@ -259,21 +261,21 @@ export default function AuthModal({
                 disabled={loading}
                 className="w-full py-3 rounded-xl bg-foreground text-background font-semibold text-sm hover:bg-foreground/90 transition-colors disabled:opacity-50"
               >
-                {loading ? "처리 중..." : tab === "login" ? "로그인" : "회원가입"}
+                {loading ? t("common.processing") : tab === "login" ? t("common.login") : t("common.signup")}
               </button>
               <p className="text-center text-xs text-muted-foreground">
                 {tab === "login" ? (
                   <>
-                    계정이 없으신가요?{" "}
+                    {t("auth.noAccount")}{" "}
                     <button type="button" onClick={() => switchTab("signup")} className="text-foreground hover:underline">
-                      회원가입
+                      {t("common.signup")}
                     </button>
                   </>
                 ) : (
                   <>
-                    이미 계정이 있으신가요?{" "}
+                    {t("auth.hasAccount")}{" "}
                     <button type="button" onClick={() => switchTab("login")} className="text-foreground hover:underline">
-                      로그인
+                      {t("common.login")}
                     </button>
                   </>
                 )}

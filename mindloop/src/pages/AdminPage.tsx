@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
@@ -13,11 +14,6 @@ type AdminGame = Game & { uploader_username?: string | null; rejection_reason?: 
 
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
-
-const categoryLabel: Record<string, string> = {
-  action: "액션", puzzle: "퍼즐", rpg: "RPG",
-  simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-};
 
 interface SystemStats {
   total_users: number;
@@ -57,6 +53,7 @@ function StatCard({ label, value, icon, color, suffix }: { label: string; value:
 }
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const { user, isAdmin, loading: authLoading } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -76,7 +73,7 @@ export default function AdminPage() {
       supabase.rpc("admin_system_stats", { p_token: token }),
     ]);
     if (gamesRes.error) {
-      toast("게임 목록 로딩 실패", "error");
+      toast(t("admin.loadFailed"), "error");
     } else {
       setGames((gamesRes.data || []) as AdminGame[]);
     }
@@ -84,7 +81,7 @@ export default function AdminPage() {
       setStats(statsRes.data[0] as SystemStats);
     }
     setLoading(false);
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -101,29 +98,29 @@ export default function AdminPage() {
       p_game_id: game.id,
       p_new_status: newStatus,
     });
-    if (error) { toast("상태 변경 실패", "error"); return; }
+    if (error) { toast(t("admin.statusChangeFailed"), "error"); return; }
     toast(
-      newStatus === "live" ? `${game.title} 승인/게시` : newStatus === "draft" ? `${game.title} 숨김` : `${game.title} 대기`,
+      newStatus === "live" ? `${game.title} ${t("admin.approve")}` : newStatus === "draft" ? `${game.title} ${t("admin.hide")}` : `${game.title} ${t("status.pending")}`,
       "success"
     );
     fetchData();
   };
 
   const rejectGame = async (game: Game) => {
-    const reason = prompt(`"${game.title}" 거절 사유를 입력하세요 (업로더에게 표시됩니다):`);
+    const reason = prompt(t("admin.rejectPrompt", { title: game.title }));
     if (!reason || !reason.trim()) return;
     const { error } = await supabase.rpc("admin_reject_game", {
       p_token: getSessionToken(),
       p_game_id: game.id,
       p_reason: reason.trim(),
     });
-    if (error) { toast("거절 실패", "error"); return; }
-    toast(`${game.title} 거절됨`, "success");
+    if (error) { toast(t("admin.rejectFailed"), "error"); return; }
+    toast(t("admin.rejected", { title: game.title }), "success");
     fetchData();
   };
 
   const deleteGame = async (game: Game) => {
-    if (!confirm(`"${game.title}" 을(를) 정말 삭제하시겠습니까?`)) return;
+    if (!confirm(t("admin.deleteConfirm", { title: game.title }))) return;
     if (game.file_paths && game.file_paths.length > 0) {
       await supabase.storage.from("games").remove(game.file_paths);
     }
@@ -131,8 +128,8 @@ export default function AdminPage() {
       p_token: getSessionToken(),
       p_game_id: game.id,
     });
-    if (error) { toast("삭제 실패", "error"); return; }
-    toast("삭제 완료", "success");
+    if (error) { toast(t("admin.deleteFailed"), "error"); return; }
+    toast(t("admin.deleteSuccess"), "success");
     fetchData();
   };
 
@@ -156,10 +153,10 @@ export default function AdminPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">시스템 통합 관리창</h1>
+                <h1 className="text-3xl font-bold">{t("admin.title")}</h1>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/20 text-accent">ADMIN</span>
               </div>
-              <p className="text-muted-foreground text-sm">전체 사용자, 승인 대기, 트래픽을 한눈에 확인하세요</p>
+              <p className="text-muted-foreground text-sm">{t("admin.subtitle")}</p>
             </div>
           </div>
         </motion.div>
@@ -167,25 +164,25 @@ export default function AdminPage() {
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard
-            label="전체 사용자 수"
+            label={t("admin.totalUsers")}
             value={stats.total_users}
             color="bg-blue-500/10 text-blue-400"
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>}
           />
           <StatCard
-            label="등록된 게임"
+            label={t("admin.totalGames")}
             value={stats.total_games}
             color="bg-purple-500/10 text-purple-400"
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /></svg>}
           />
           <StatCard
-            label="승인 대기"
+            label={t("admin.pendingGames")}
             value={stats.pending_games}
             color="bg-yellow-500/10 text-yellow-400"
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>}
           />
           <StatCard
-            label="총 조회수"
+            label={t("admin.totalViews")}
             value={stats.total_views}
             color="bg-green-500/10 text-green-400"
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
@@ -205,10 +202,10 @@ export default function AdminPage() {
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
-              <h2 className="text-foreground font-semibold">신규 업로드 승인 대기</h2>
+              <h2 className="text-foreground font-semibold">{t("admin.pendingQueue")}</h2>
             </div>
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400">
-              {pendingGames.length}건
+              {pendingGames.length}{t("admin.count")}
             </span>
           </div>
           {loading ? (
@@ -216,7 +213,7 @@ export default function AdminPage() {
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-6 h-6 border-2 border-muted-foreground/30 border-t-foreground rounded-full" />
             </div>
           ) : pendingGames.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">승인 대기 중인 게임이 없습니다</div>
+            <div className="text-center py-10 text-muted-foreground text-sm">{t("admin.noPending")}</div>
           ) : (
             <div className="divide-y divide-white/5">
               {pendingGames.map((g) => (
@@ -227,26 +224,26 @@ export default function AdminPage() {
                     <p className="text-muted-foreground text-xs">
                       <span className="text-foreground/70">@{g.uploader_username || "unknown"}</span>
                       {" · "}
-                      {categoryLabel[g.category] || g.category} · {g.type === "shortform" ? "SHORT" : "LONG"}
+                      {t(`category.${g.category}`)} · {g.type === "shortform" ? t("gameType.short") : t("gameType.long")}
                     </p>
                   </div>
                   <button
                     onClick={() => setPreviewGame(g)}
                     className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-colors"
                   >
-                    미리보기
+                    {t("admin.preview")}
                   </button>
                   <button
                     onClick={() => updateStatus(g, "live")}
                     className="text-xs px-3 py-1.5 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
                   >
-                    승인
+                    {t("admin.approve")}
                   </button>
                   <button
                     onClick={() => rejectGame(g)}
                     className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                   >
-                    거절
+                    {t("admin.reject")}
                   </button>
                 </div>
               ))}
@@ -269,13 +266,13 @@ export default function AdminPage() {
                 <line x1="6" y1="6" x2="6.01" y2="6" />
                 <line x1="6" y1="18" x2="6.01" y2="18" />
               </svg>
-              <h3 className="text-foreground font-semibold text-sm">서버 상태</h3>
+              <h3 className="text-foreground font-semibold text-sm">{t("admin.serverStatus")}</h3>
               <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">ONLINE</span>
             </div>
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">가동 시간</span>
+                  <span className="text-muted-foreground">{t("admin.uptime")}</span>
                   <span className="text-foreground font-medium">{DUMMY_SERVER.uptime}</span>
                 </div>
               </div>
@@ -290,7 +287,7 @@ export default function AdminPage() {
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">메모리</span>
+                  <span className="text-muted-foreground">Memory</span>
                   <span className="text-foreground font-medium">{DUMMY_SERVER.memory}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -310,19 +307,19 @@ export default function AdminPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
-              <h3 className="text-foreground font-semibold text-sm">24시간 트래픽 리포트</h3>
+              <h3 className="text-foreground font-semibold text-sm">{t("admin.trafficReport")}</h3>
             </div>
             <p className="text-3xl font-bold text-foreground">
               <CountUp value={DUMMY_SERVER.requests24h} />
             </p>
-            <p className="text-muted-foreground text-xs mt-1">총 요청 수</p>
+            <p className="text-muted-foreground text-xs mt-1">{t("admin.totalRequests")}</p>
             <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
               <div>
-                <p className="text-xs text-muted-foreground">총 좋아요</p>
+                <p className="text-xs text-muted-foreground">{t("admin.totalLikes")}</p>
                 <p className="text-lg font-semibold text-foreground"><CountUp value={stats.total_likes} /></p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">업로더 수</p>
+                <p className="text-xs text-muted-foreground">{t("admin.uploaderCount")}</p>
                 <p className="text-lg font-semibold text-foreground"><CountUp value={stats.total_uploaders} /></p>
               </div>
             </div>
@@ -337,26 +334,26 @@ export default function AdminPage() {
           className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden"
         >
           <div className="px-5 py-4 border-b border-white/10">
-            <h2 className="text-foreground font-semibold">전체 게임 목록</h2>
+            <h2 className="text-foreground font-semibold">{t("admin.allGames")}</h2>
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-6 h-6 border-2 border-muted-foreground/30 border-t-foreground rounded-full" />
             </div>
           ) : games.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground text-sm">등록된 게임이 없습니다</div>
+            <div className="text-center py-16 text-muted-foreground text-sm">{t("admin.noGames")}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-muted-foreground text-xs">
-                    <th className="text-left px-5 py-3 font-medium">제목</th>
-                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">업로더</th>
-                    <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">유형</th>
-                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">카테고리</th>
-                    <th className="text-right px-3 py-3 font-medium hidden sm:table-cell">조회수</th>
-                    <th className="text-center px-3 py-3 font-medium">상태</th>
-                    <th className="text-right px-5 py-3 font-medium">관리</th>
+                    <th className="text-left px-5 py-3 font-medium">{t("admin.colTitle")}</th>
+                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">{t("admin.colUploader")}</th>
+                    <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">{t("admin.colType")}</th>
+                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">{t("admin.colCategory")}</th>
+                    <th className="text-right px-3 py-3 font-medium hidden sm:table-cell">{t("admin.colViews")}</th>
+                    <th className="text-center px-3 py-3 font-medium">{t("admin.colStatus")}</th>
+                    <th className="text-right px-5 py-3 font-medium">{t("admin.colManage")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -373,10 +370,10 @@ export default function AdminPage() {
                       </td>
                       <td className="px-3 py-3 hidden sm:table-cell">
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">
-                          {game.type === "shortform" ? "SHORT" : "LONG"}
+                          {game.type === "shortform" ? t("gameType.short") : t("gameType.long")}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">{categoryLabel[game.category] || game.category}</td>
+                      <td className="px-3 py-3 text-muted-foreground hidden md:table-cell">{t(`category.${game.category}`)}</td>
                       <td className="px-3 py-3 text-right text-muted-foreground hidden sm:table-cell">{game.views.toLocaleString()}</td>
                       <td className="px-3 py-3 text-center">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
@@ -384,19 +381,19 @@ export default function AdminPage() {
                           : game.status === "pending" ? "bg-yellow-500/15 text-yellow-400"
                           : "bg-gray-500/15 text-gray-400"
                         }`}>
-                          {game.status === "live" ? "게시중" : game.status === "pending" ? "대기" : "숨김"}
+                          {game.status === "live" ? t("status.live") : game.status === "pending" ? t("status.pending") : t("status.draft")}
                         </span>
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => setPreviewGame(game)} className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">미리보기</button>
+                          <button onClick={() => setPreviewGame(game)} className="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">{t("admin.preview")}</button>
                           {game.status !== "live" && (
-                            <button onClick={() => updateStatus(game, "live")} className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">게시</button>
+                            <button onClick={() => updateStatus(game, "live")} className="text-xs px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors">{t("admin.publish")}</button>
                           )}
                           {game.status === "live" && (
-                            <button onClick={() => updateStatus(game, "draft")} className="text-xs px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors">숨김</button>
+                            <button onClick={() => updateStatus(game, "draft")} className="text-xs px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-colors">{t("admin.hide")}</button>
                           )}
-                          <button onClick={() => deleteGame(game)} className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">삭제</button>
+                          <button onClick={() => deleteGame(game)} className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">{t("common.delete")}</button>
                         </div>
                       </td>
                     </tr>

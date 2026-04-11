@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { getSessionToken } from "@/hooks/useAuth";
@@ -13,46 +14,43 @@ const ALLOWED_EXTENSIONS = [".html", ".htm", ".js", ".css", ".png", ".jpg", ".jp
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50MB total
 
-const categoryMap: Record<string, string> = {
-  "액션": "action",
-  "퍼즐": "puzzle",
-  "RPG": "rpg",
-  "시뮬레이션": "simulation",
-  "전략": "strategy",
-  "캐주얼": "casual",
-};
+const categoryKeys = ["action", "puzzle", "rpg", "simulation", "strategy", "casual"] as const;
+type CategoryKey = typeof categoryKeys[number];
 
-const categories = Object.keys(categoryMap);
-
-const gameTypes = [
-  { key: "shortform" as const, label: "숏폼", desc: "5분 이하" },
-  { key: "longform" as const, label: "롱폼", desc: "5분 이상" },
-];
+const gameTypeKeys = ["shortform", "longform"] as const;
 
 interface UploadForm {
   files: File[];
   thumbnail: File | null;
   thumbnailPreview: string | null;
   title: string;
-  category: string;
+  category: CategoryKey | "";
   type: "shortform" | "longform";
   playtime: string;
   description: string;
   tags: string;
 }
 
+type SecurityWarningKey =
+  | { key: "security.cookieAccess" }
+  | { key: "security.evalUsage" }
+  | { key: "security.redirect" }
+  | { key: "security.networkRequest"; url: string }
+  | { key: "security.storageAccess" }
+  | { key: "security.postMessage" };
+
 /* ── Security Scanner ── */
-function scanHtmlFile(content: string): string[] {
-  const warnings: string[] = [];
+function scanHtmlFile(content: string): SecurityWarningKey[] {
+  const warnings: SecurityWarningKey[] = [];
   if (/document\.cookie/i.test(content)) {
-    warnings.push("document.cookie 접근이 감지되었습니다");
+    warnings.push({ key: "security.cookieAccess" });
   }
   if (/\beval\s*\(/.test(content) || /\bnew\s+Function\s*\(/.test(content)) {
-    warnings.push("eval() 또는 new Function() 사용이 감지되었습니다");
+    warnings.push({ key: "security.evalUsage" });
   }
   // window.location 감지 (단, hash는 허용)
   if (/window\.location(?!\.hash)/i.test(content)) {
-    warnings.push("외부 리다이렉트(window.location)가 감지되었습니다");
+    warnings.push({ key: "security.redirect" });
   }
   // 외부 도메인 fetch/XHR 감지 (CDN 허용 목록 제외)
   const cdnAllowList = ["cdn.jsdelivr.net", "cdnjs.cloudflare.com", "unpkg.com", "fonts.googleapis.com", "fonts.gstatic.com"];
@@ -62,17 +60,17 @@ function scanHtmlFile(content: string): string[] {
     const url = match[1];
     const isAllowed = cdnAllowList.some((cdn) => url.includes(cdn));
     if (!isAllowed) {
-      warnings.push(`외부 네트워크 요청 감지: ${url.slice(0, 60)}`);
+      warnings.push({ key: "security.networkRequest", url: url.slice(0, 60) });
       break;
     }
   }
   // localStorage/sessionStorage 접근 감지
   if (/\b(localStorage|sessionStorage)\s*\./.test(content)) {
-    warnings.push("localStorage/sessionStorage 접근이 감지되었습니다");
+    warnings.push({ key: "security.storageAccess" });
   }
   // parent.postMessage 감지 (iframe 탈출 시도)
   if (/parent\s*\.\s*postMessage|top\s*\.\s*postMessage|window\s*\.\s*parent/i.test(content)) {
-    warnings.push("iframe 외부 통신(postMessage) 시도가 감지되었습니다");
+    warnings.push({ key: "security.postMessage" });
   }
   return warnings;
 }
@@ -84,6 +82,7 @@ function isAllowedFile(name: string): boolean {
 export default function UploadSection() {
   const { user, isAdmin } = useAuthContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [form, setForm] = useState<UploadForm>({
     files: [],
@@ -100,20 +99,27 @@ export default function UploadSection() {
   const [isDraggingThumb, setIsDraggingThumb] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadDone, setUploadDone] = useState(false);
-  const [securityWarnings, setSecurityWarnings] = useState<string[]>([]);
+  const [securityWarnings, setSecurityWarnings] = useState<SecurityWarningKey[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const gameInputRef = useRef<HTMLInputElement>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
 
+  const resolveWarning = useCallback((w: SecurityWarningKey): string => {
+    if (w.key === "security.networkRequest") {
+      return t(w.key, { url: w.url });
+    }
+    return t(w.key);
+  }, [t]);
+
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const valid = Array.from(newFiles).filter((f) => {
       if (!isAllowedFile(f.name)) {
-        toast(`허용되지 않는 파일 형식: ${f.name}`, "error");
+        toast(t("upload.badFileType", { name: f.name }), "error");
         return false;
       }
       if (f.size > MAX_FILE_SIZE) {
-        toast(`파일이 너무 큽니다: ${f.name} (개별 최대 10MB)`, "error");
+        toast(t("upload.fileTooLarge", { name: f.name }), "error");
         return false;
       }
       return true;
@@ -128,7 +134,7 @@ export default function UploadSection() {
           const warnings = scanHtmlFile(reader.result as string);
           if (warnings.length > 0) {
             setSecurityWarnings((prev) => [...prev, ...warnings]);
-            warnings.forEach((w) => toast(`보안 경고: ${w}`, "warning"));
+            warnings.forEach((w) => toast(t("security.warning", { content: resolveWarning(w) }), "warning"));
           }
         };
         reader.readAsText(file);
@@ -139,12 +145,12 @@ export default function UploadSection() {
       const merged = [...prev.files, ...valid.filter((f) => !prev.files.some((ef) => ef.name === f.name))];
       const totalSize = merged.reduce((sum, f) => sum + f.size, 0);
       if (totalSize > MAX_TOTAL_SIZE) {
-        toast("전체 파일 크기가 50MB를 초과합니다", "error");
+        toast(t("upload.totalTooLarge"), "error");
         return prev;
       }
       return { ...prev, files: merged };
     });
-  }, [toast]);
+  }, [toast, t, resolveWarning]);
 
   const removeFile = (name: string) => {
     setForm((prev) => ({ ...prev, files: prev.files.filter((f) => f.name !== name) }));
@@ -246,7 +252,7 @@ export default function UploadSection() {
         p_game_id: gameId,
         p_title: form.title.trim(),
         p_description: form.description.trim() || null,
-        p_category: categoryMap[form.category] || "casual",
+        p_category: form.category || "casual",
         p_type: form.type,
         p_playtime: form.playtime.trim() || null,
         p_tags: tags.length > 0 ? tags : null,
@@ -261,8 +267,8 @@ export default function UploadSection() {
       // Success
       toast(
         isAdmin
-          ? `${form.title} 업로드 완료!`
-          : `${form.title} 제출 완료! 관리자 승인 후 게시됩니다.`,
+          ? t("upload.uploadSuccess", { title: form.title })
+          : t("upload.submitSuccess", { title: form.title }),
         "success"
       );
       setUploadDone(true);
@@ -281,7 +287,7 @@ export default function UploadSection() {
         });
       }, 3000);
     } catch (err: any) {
-      toast(err.message || "업로드 중 오류가 발생했습니다", "error");
+      toast(err.message || t("upload.uploadError"), "error");
     } finally {
       setIsUploading(false);
     }
@@ -306,11 +312,11 @@ export default function UploadSection() {
             className="text-center mb-10"
           >
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-[-1px] md:tracking-[-1.5px] leading-[1.1] mb-3">
-              서랍 속 게임,{" "}
-              <span className="font-serif italic font-normal">지금</span> 꺼내세요
+              {t("upload.title1")}{" "}
+              <span className="font-serif italic font-normal">{t("upload.title2")}</span> {t("upload.title3")}
             </h1>
             <p className="text-muted-foreground text-base">
-              HTML 파일을 끌어다 놓으면 3초 안에 전 세계가 플레이합니다.
+              {t("upload.subtitle")}
             </p>
           </motion.div>
 
@@ -321,12 +327,12 @@ export default function UploadSection() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm text-center"
             >
-              게임 업로드는 로그인 후 이용 가능합니다.{" "}
+              {t("upload.loginRequired")}{" "}
               <button
                 onClick={() => setShowAuthModal(true)}
                 className="underline hover:text-yellow-300"
               >
-                로그인
+                {t("common.login")}
               </button>
             </motion.div>
           )}
@@ -381,7 +387,7 @@ export default function UploadSection() {
                         </svg>
                       </div>
                       <p className="text-foreground text-sm font-medium mb-2">
-                        {form.files.length}개 파일
+                        {form.files.length}{t("upload.filesCount")}
                       </p>
                       <div className="max-h-[80px] overflow-y-auto space-y-1">
                         {form.files.map((f) => (
@@ -400,7 +406,7 @@ export default function UploadSection() {
                         onClick={() => gameInputRef.current?.click()}
                         className="text-xs text-muted-foreground hover:text-foreground mt-2 underline"
                       >
-                        + 파일 추가
+                        {t("upload.addMore")}
                       </button>
                     </motion.div>
                   ) : (
@@ -418,9 +424,9 @@ export default function UploadSection() {
                           <line x1="12" y1="3" x2="12" y2="15" strokeLinecap="round" />
                         </svg>
                       </div>
-                      <p className="text-muted-foreground text-sm font-medium">게임 파일</p>
+                      <p className="text-muted-foreground text-sm font-medium">{t("upload.gameFiles")}</p>
                       <p className="text-muted-foreground/60 text-xs mt-1">
-                        HTML, JS, CSS, 이미지 등 드래그 또는 클릭
+                        {t("upload.dragOrClick")}
                       </p>
                     </motion.div>
                   )}
@@ -445,9 +451,9 @@ export default function UploadSection() {
                 <AnimatePresence mode="wait">
                   {form.thumbnailPreview ? (
                     <motion.div key="thumb-selected" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute inset-0">
-                      <img src={form.thumbnailPreview} alt="썸네일" className="w-full h-full object-cover" />
+                      <img src={form.thumbnailPreview} alt={t("upload.thumbnail")} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <p className="text-white text-sm font-medium">변경하기</p>
+                        <p className="text-white text-sm font-medium">{t("common.edit")}</p>
                       </div>
                     </motion.div>
                   ) : (
@@ -459,8 +465,8 @@ export default function UploadSection() {
                           <polyline points="21,15 16,10 5,21" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
-                      <p className="text-muted-foreground text-sm font-medium">썸네일 이미지</p>
-                      <p className="text-muted-foreground/60 text-xs mt-1">그리드에 표시될 이미지</p>
+                      <p className="text-muted-foreground text-sm font-medium">{t("upload.thumbnail")}</p>
+                      <p className="text-muted-foreground/60 text-xs mt-1">{t("upload.thumbnailDesc")}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -476,9 +482,9 @@ export default function UploadSection() {
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-4 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20"
                 >
-                  <p className="text-yellow-400 text-xs font-semibold mb-1">보안 경고</p>
+                  <p className="text-yellow-400 text-xs font-semibold mb-1">{t("upload.securityWarnings")}</p>
                   {securityWarnings.map((w, i) => (
-                    <p key={i} className="text-yellow-400/80 text-xs">• {w}</p>
+                    <p key={i} className="text-yellow-400/80 text-xs">• {resolveWarning(w)}</p>
                   ))}
                 </motion.div>
               )}
@@ -489,7 +495,7 @@ export default function UploadSection() {
               {/* Title */}
               <input
                 type="text"
-                placeholder="게임 제목"
+                placeholder={t("upload.gameTitle")}
                 value={form.title}
                 onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
                 className="w-full bg-foreground/5 border border-border/30 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/40 transition-colors"
@@ -497,24 +503,24 @@ export default function UploadSection() {
 
               {/* Game Type */}
               <div className="flex gap-2">
-                {gameTypes.map((gt) => (
+                {gameTypeKeys.map((key) => (
                   <button
-                    key={gt.key}
-                    onClick={() => setForm((prev) => ({ ...prev, type: gt.key }))}
+                    key={key}
+                    onClick={() => setForm((prev) => ({ ...prev, type: key }))}
                     className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 border ${
-                      form.type === gt.key
+                      form.type === key
                         ? "bg-foreground text-background border-foreground"
                         : "bg-foreground/5 text-muted-foreground border-border/30 hover:border-foreground/30"
                     }`}
                   >
-                    {gt.label} <span className="opacity-60">({gt.desc})</span>
+                    {t(`gameType.${key}`)} <span className="opacity-60">({t(key === "shortform" ? "gameType.shortDesc" : "gameType.longDesc")})</span>
                   </button>
                 ))}
               </div>
 
               {/* Category */}
               <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
+                {categoryKeys.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setForm((prev) => ({ ...prev, category: prev.category === cat ? "" : cat }))}
@@ -524,7 +530,7 @@ export default function UploadSection() {
                         : "bg-foreground/5 text-muted-foreground border border-border/30 hover:border-foreground/30 hover:text-foreground"
                     }`}
                   >
-                    {cat}
+                    {t(`category.${cat}`)}
                   </button>
                 ))}
               </div>
@@ -533,14 +539,14 @@ export default function UploadSection() {
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="text"
-                  placeholder="플레이타임 (예: 3분)"
+                  placeholder={t("upload.playtimePlaceholder")}
                   value={form.playtime}
                   onChange={(e) => setForm((prev) => ({ ...prev, playtime: e.target.value }))}
                   className="bg-foreground/5 border border-border/30 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/40 transition-colors"
                 />
                 <input
                   type="text"
-                  placeholder="태그 (쉼표 구분)"
+                  placeholder={t("upload.tagsPlaceholder")}
                   value={form.tags}
                   onChange={(e) => setForm((prev) => ({ ...prev, tags: e.target.value }))}
                   className="bg-foreground/5 border border-border/30 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-foreground/40 transition-colors"
@@ -549,7 +555,7 @@ export default function UploadSection() {
 
               {/* Description */}
               <textarea
-                placeholder="게임에 대한 짧은 설명 (선택사항)"
+                placeholder={t("upload.descPlaceholder")}
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 rows={3}
@@ -575,34 +581,33 @@ export default function UploadSection() {
                 {uploadDone ? (
                   <motion.span key="done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center justify-center gap-2">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="10" /></svg>
-                    업로드 완료!
+                    {t("upload.uploadDone")}
                   </motion.span>
                 ) : isUploading ? (
                   <motion.span key="uploading" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center justify-center gap-2">
                     <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full" />
-                    업로드 중...
+                    {t("upload.uploading")}
                   </motion.span>
                 ) : !user ? (
                   <motion.span key="login-required" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                    로그인 후 업로드
+                    {t("upload.loginToUpload")}
                   </motion.span>
                 ) : (
                   <motion.span key="idle" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                    {isAdmin ? "게임 업로드하기" : "게임 제출하기 (승인 대기)"}
+                    {isAdmin ? t("upload.adminUpload") : t("upload.uploaderSubmit")}
                   </motion.span>
                 )}
               </AnimatePresence>
             </motion.button>
 
             <p className="text-center text-muted-foreground/50 text-xs mt-4">
-              개별 10MB · 전체 50MB · HTML 파일 필수
+              {t("upload.sizeInfo")}
             </p>
 
             {/* Legal notice */}
             <div className="mt-4 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
               <p className="text-[11px] leading-relaxed text-muted-foreground text-center">
-                저작권이 있는 저작물을 무단 도용하여 발생한 모든 책임은 업로더에게 있으며,
-                <span className="text-foreground font-medium"> 'gamedrop'</span>은 이에 대해 어떠한 책임도 지지 않습니다.
+                {t("upload.legalNotice")}
               </p>
             </div>
           </motion.div>

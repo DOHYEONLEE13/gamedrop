@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { fadeUp } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/AuthContext";
 import AuthModal from "./AuthModal";
@@ -13,6 +14,7 @@ const avatarColors = ["#444", "#666", "#888"];
 export default function Hero() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
 
   const handleCta = () => {
@@ -50,7 +52,7 @@ export default function Hero() {
             ))}
           </div>
           <span className="ml-3 text-muted-foreground text-sm">
-            가입 47초, 업로드 3초, 비용 0원
+            {t("hero.badge")}
           </span>
         </motion.div>
 
@@ -59,9 +61,9 @@ export default function Hero() {
           {...fadeUp(0.1)}
           className="text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl font-medium tracking-[-1px] md:tracking-[-2px] leading-[1.1] mb-6"
         >
-          게임 만들었으면,{" "}
-          <span className="font-serif italic font-normal">3초</span>면
-          올린다.
+          {t("hero.title1")}{" "}
+          <span className="font-serif italic font-normal">{t("hero.title2")}</span>
+          {t("hero.title3")}
         </motion.h1>
 
         {/* Subtitle */}
@@ -69,8 +71,7 @@ export default function Hero() {
           {...fadeUp(0.2)}
           className="text-base md:text-lg text-hero-subtitle mb-8 md:mb-10 max-w-xl px-2"
         >
-          AI로 만든 HTML 게임, 파일 하나 끌어다 놓으면 전 세계가 플레이합니다.
-          도메인 없이. 서버 없이. 배포 지식 없이.
+          {t("hero.subtitle")}
         </motion.p>
 
         {/* CTA row */}
@@ -80,7 +81,7 @@ export default function Hero() {
           onClick={handleCta}
         >
           <div className="flex-1 min-w-0 px-3 sm:px-5 py-3 text-xs sm:text-sm text-muted-foreground text-left truncate">
-            지금 게임을 업로드 하세요
+            {t("hero.inputPlaceholder")}
           </div>
           <motion.button
             whileHover={{ scale: 1.03 }}
@@ -91,7 +92,7 @@ export default function Hero() {
             }}
             className="bg-foreground text-background rounded-full px-4 sm:px-8 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap flex-shrink-0"
           >
-            지금 무료로 시작하기
+            {t("hero.cta")}
           </motion.button>
         </motion.div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import Hls from "hls.js";
 import { useGames } from "@/hooks/useGames";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -8,18 +9,14 @@ import { useToast } from "@/components/Toast";
 import AuthModal from "./AuthModal";
 import { shorts as mockShorts } from "@/data/shorts";
 import type { Game } from "@/types/database";
+import type { TFunction } from "i18next";
 
 const HLS_URL =
   "https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8";
 
-const categoryLabel: Record<string, string> = {
-  action: "액션", puzzle: "퍼즐", rpg: "RPG",
-  simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-};
-
-function formatNumber(n: number) {
-  if (n >= 10000) return (n / 10000).toFixed(1) + "만";
-  if (n >= 1000) return (n / 1000).toFixed(1) + "천";
+function formatNumber(n: number, t: TFunction) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + t("format.wan");
+  if (n >= 1000) return (n / 1000).toFixed(1) + t("format.cheon");
   return n.toString();
 }
 
@@ -67,6 +64,7 @@ function ActionButton({ icon, label, active, onClick }: {
 
 /* ── Single Short Card (DB game) ── */
 function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { liked, saved, toggleLike, toggleSave, incrementViews } = useGameInteractions(game.id);
@@ -100,6 +98,7 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
     e.stopPropagation();
     if (!user) { setShowAuth(true); return; }
     await toggleLike();
+    toast(liked ? t("gamePlay.unlike") : t("gamePlay.like"), liked ? "info" : "success");
   };
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -107,9 +106,9 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
     const url = `${window.location.origin}/shorts?game=${game.id}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast("URL이 복사되었습니다", "success");
+      toast(t("common.urlCopied"), "success");
     } catch {
-      toast("복사 실패", "error");
+      toast(t("common.copyFailed"), "error");
     }
   };
 
@@ -117,7 +116,7 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
     e.stopPropagation();
     if (!user) { setShowAuth(true); return; }
     const success = await toggleSave();
-    if (success) toast(saved ? "저장 취소" : "나중에 플레이에 저장!", saved ? "info" : "success");
+    if (success) toast(saved ? t("gamePlay.unsave") : t("gamePlay.saveForLater"), saved ? "info" : "success");
   };
 
   const thumbnail = game.thumbnail_url || `https://picsum.photos/seed/${game.id.slice(0, 8)}/450/800`;
@@ -186,7 +185,7 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
                     </motion.div>
                     <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.4 }} className="text-center">
                       <p className="text-white font-semibold text-lg">{game.title}</p>
-                      <p className="text-white/50 text-xs mt-1">게임 실행 중</p>
+                      <p className="text-white/50 text-xs mt-1">{t("shorts.gameRunning")}</p>
                     </motion.div>
                     <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} className="flex items-center gap-1.5 mt-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
@@ -205,12 +204,12 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
             <div className="absolute bottom-0 left-0 right-16 p-4 z-[3]">
               <p className="text-white font-semibold text-base mb-1">{game.title}</p>
               <div className="flex items-center gap-2">
-                <span className="text-white/70 text-xs">{formatNumber(game.views)} 조회</span>
+                <span className="text-white/70 text-xs">{formatNumber(game.views, t)} {t("common.views")}</span>
                 <span className="text-white/40 text-xs">·</span>
-                <span className="text-white/70 text-xs">{formatNumber(game.likes)} 좋아요</span>
+                <span className="text-white/70 text-xs">{formatNumber(game.likes, t)} {t("common.likes")}</span>
               </div>
               <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-white/15 text-white/80 backdrop-blur-sm">
-                {categoryLabel[game.category] || game.category}
+                {t(`category.${game.category}`, { defaultValue: game.category })}
               </span>
             </div>
 
@@ -218,17 +217,17 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
             <div className="absolute bottom-6 right-3 flex flex-col gap-4 z-[3]">
               <ActionButton
                 icon={<HeartIcon filled={liked} />}
-                label={formatNumber(game.likes + (liked ? 1 : 0))}
+                label={formatNumber(game.likes + (liked ? 1 : 0), t)}
                 active={liked}
                 onClick={handleLike}
               />
               <ActionButton
                 icon={<BookmarkIcon filled={saved} />}
-                label={saved ? "저장됨" : "저장"}
+                label={saved ? t("common.saved") : t("common.save")}
                 active={saved}
                 onClick={handleSave}
               />
-              <ActionButton icon={<ShareIcon />} label="공유" onClick={handleShare} />
+              <ActionButton icon={<ShareIcon />} label={t("common.share")} onClick={handleShare} />
             </div>
           </div>
         </motion.div>
@@ -241,6 +240,7 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
 
 /* ── Mock Short Card (fallback) ── */
 function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActive: boolean }) {
+  const { t } = useTranslation();
   const [liked, setLiked] = useState(false);
   const { toast } = useToast();
 
@@ -249,9 +249,9 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
     const url = `${window.location.origin}/shorts?game=${game.id}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast("URL이 복사되었습니다", "success");
+      toast(t("common.urlCopied"), "success");
     } catch {
-      toast("복사 실패", "error");
+      toast(t("common.copyFailed"), "error");
     }
   };
 
@@ -279,7 +279,7 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
                   </div>
                   <div className="text-center">
                     <p className="text-white font-semibold text-lg">{game.title}</p>
-                    <p className="text-white/50 text-xs mt-1">게임 실행 중</p>
+                    <p className="text-white/50 text-xs mt-1">{t("shorts.gameRunning")}</p>
                   </div>
                   <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400" /><span className="text-green-400/80 text-[10px] font-medium">LIVE</span>
@@ -296,9 +296,9 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
             <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-white/15 text-white/80 backdrop-blur-sm">{game.category}</span>
           </div>
           <div className="absolute bottom-6 right-3 flex flex-col gap-4 z-[3]">
-            <ActionButton icon={<HeartIcon filled={liked} />} label={formatNumber(game.likes + (liked ? 1 : 0))} active={liked} onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} />
-            <ActionButton icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5,3 19,12 5,21" /></svg>} label={formatNumber(game.plays)} />
-            <ActionButton icon={<ShareIcon />} label="공유" onClick={handleShare} />
+            <ActionButton icon={<HeartIcon filled={liked} />} label={formatNumber(game.likes + (liked ? 1 : 0), t)} active={liked} onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} />
+            <ActionButton icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5,3 19,12 5,21" /></svg>} label={formatNumber(game.plays, t)} />
+            <ActionButton icon={<ShareIcon />} label={t("common.share")} onClick={handleShare} />
           </div>
         </div>
       </motion.div>
@@ -308,6 +308,7 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
 
 /* ── Main Shorts Section ── */
 export default function ShortsSection() {
+  const { t } = useTranslation();
   const bgVideoRef = useRef<HTMLVideoElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -387,7 +388,7 @@ export default function ShortsSection() {
               <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" opacity="0.5"><polyline points="6,9 12,15 18,9" /></svg>
               </motion.div>
-              <span className="text-white/40 text-xs">스와이프하여 더 보기</span>
+              <span className="text-white/40 text-xs">{t("shorts.swipeMore")}</span>
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useGameInteractions } from "@/hooks/useGameInteractions";
 import { useToast } from "@/components/Toast";
@@ -28,6 +29,7 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
 }
 
 export default function GamePlayModal({ game, onClose }: GamePlayModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { liked, saved, toggleLike, toggleSave, incrementViews, recordPlay } =
@@ -84,7 +86,7 @@ export default function GamePlayModal({ game, onClose }: GamePlayModalProps) {
     }
     const success = await toggleLike();
     if (success) {
-      toast(liked ? "좋아요 취소" : "좋아요!", liked ? "info" : "success");
+      toast(liked ? t("gamePlay.unlike") : t("gamePlay.like"), liked ? "info" : "success");
     }
   };
 
@@ -95,14 +97,10 @@ export default function GamePlayModal({ game, onClose }: GamePlayModalProps) {
     }
     const success = await toggleSave();
     if (success) {
-      toast(saved ? "저장 취소" : "나중에 플레이에 저장!", saved ? "info" : "success");
+      toast(saved ? t("gamePlay.unsave") : t("gamePlay.saveForLater"), saved ? "info" : "success");
     }
   };
 
-  const categoryLabel: Record<string, string> = {
-    action: "액션", puzzle: "퍼즐", rpg: "RPG",
-    simulation: "시뮬레이션", strategy: "전략", casual: "캐주얼",
-  };
 
   return (
     <>
@@ -130,7 +128,7 @@ export default function GamePlayModal({ game, onClose }: GamePlayModalProps) {
                     {game.title}
                   </h3>
                   <span className="text-muted-foreground text-xs px-2 py-0.5 rounded-full bg-secondary">
-                    {categoryLabel[game.category] || game.category}
+                    {t(`category.${game.category}`, { defaultValue: game.category })}
                   </span>
                   {game.playtime && (
                     <span className="text-muted-foreground text-xs">
@@ -210,7 +208,7 @@ export default function GamePlayModal({ game, onClose }: GamePlayModalProps) {
                         )}
                         <p className="text-2xl font-semibold mb-2">{game.title}</p>
                         <p className="text-muted-foreground text-sm mb-6">
-                          {game.html_url ? "게임 로딩에 실패했습니다" : "아직 게임 파일이 없습니다"}
+                          {game.html_url ? t("gamePlay.loadFailed") : t("gamePlay.noFile")}
                         </p>
                       </div>
                     </div>

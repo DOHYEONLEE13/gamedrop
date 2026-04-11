@@ -1,24 +1,26 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { fadeUp } from "@/lib/utils";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 
 export default function TermsOfServicePage() {
+  const { t } = useTranslation();
   return (
     <>
-      <SEO title="이용약관" description="GameDrop 서비스 이용약관입니다." path="/terms" />
+      <SEO title={t("seo.termsTitle")} description={t("terms.title")} path="/terms" />
       <section className="pt-24 md:pt-32 pb-16 px-5 md:px-28 max-w-4xl mx-auto">
         <motion.h1
           {...fadeUp(0)}
           className="text-[2rem] sm:text-4xl md:text-5xl font-medium tracking-[-1px] leading-[1.1] mb-4"
         >
-          이용약관
+          {t("terms.title")}
         </motion.h1>
         <motion.p
           {...fadeUp(0.05)}
           className="text-muted-foreground text-sm mb-12"
         >
-          최종 수정일: 2026년 4월 9일
+          {t("terms.lastUpdated")}
         </motion.p>
 
         <motion.div
