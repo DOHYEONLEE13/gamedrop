@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { fadeUp } from "@/lib/utils";
 
 const MISSION_VIDEO_URL =
@@ -26,19 +27,21 @@ function Word({ word, progress, range, highlighted }: WordProps) {
   );
 }
 
-const p1Text =
-  "우리는 만드는 사람과 플레이하는 사람이 만나는 공간을 짓고 있습니다 — 제작자는 3초 만에 배포하고, 플레이어는 스와이프 한 번으로 새 게임을 발견합니다.";
-const p2Text =
-  "도메인도, 서버도, 배포 지식도 필요 없는 세상 — 더 적은 장벽, 더 적은 비용, 더 많은 플레이어를 위한 플랫폼.";
-
-const p1Highlights = new Set(["만나는", "3초", "발견합니다."]);
-
 export default function Mission() {
+  const { t, i18n } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start 0.8", "end 0.3"],
   });
+
+  const p1Text = t("mission.text1");
+  const p2Text = t("mission.text2");
+
+  // Highlighted words differ by language
+  const p1HighlightsKo = new Set(["만나는", "3초", "발견합니다."]);
+  const p1HighlightsEn = new Set(["meet", "3sec", "discover"]);
+  const p1Highlights = i18n.language.startsWith("ko") ? p1HighlightsKo : p1HighlightsEn;
 
   const p1Words = p1Text.split(" ");
   const p2Words = p2Text.split(" ");
@@ -71,9 +74,7 @@ export default function Mission() {
                 word={word}
                 progress={scrollYProgress}
                 range={[start, end]}
-                highlighted={p1Highlights.has(
-                  word.replace(/[—,.']/g, "").toLowerCase()
-                )}
+                highlighted={p1Highlights.has(word.replace(/[—,.']/g, "").toLowerCase())}
               />
             );
           })}
