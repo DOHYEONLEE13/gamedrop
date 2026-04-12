@@ -197,8 +197,8 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
             </AnimatePresence>
 
             {/* Gradients */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/50 to-transparent z-[2]" />
-            <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/70 to-transparent z-[2]" />
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/50 to-transparent z-[2] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/70 to-transparent z-[2] pointer-events-none" />
 
             {/* Bottom info */}
             <div className="absolute bottom-0 left-0 right-16 p-4 z-[3]">
