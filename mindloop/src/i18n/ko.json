@@ -270,6 +270,21 @@
     "loadFailed": "게임 로딩에 실패했습니다",
     "noFile": "아직 게임 파일이 없습니다"
   },
+  "gameDetail": {
+    "back": "뒤로",
+    "play": "플레이",
+    "loading": "게임을 불러오는 중...",
+    "notFound": "게임을 찾을 수 없습니다",
+    "notFoundDesc": "삭제되었거나 공개되지 않은 게임입니다.",
+    "browse": "게임 둘러보기",
+    "views": "{{count}}회 조회",
+    "likes": "좋아요 {{count}}개",
+    "playtime": "플레이타임",
+    "category": "카테고리",
+    "description": "게임 설명",
+    "share": "공유하기",
+    "playNow": "지금 플레이"
+  },
   "security": {
     "cookieAccess": "document.cookie 접근이 감지되었습니다",
     "evalUsage": "eval() 또는 new Function() 사용이 감지되었습니다",

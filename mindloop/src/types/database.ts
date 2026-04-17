@@ -4,6 +4,7 @@ export interface Database {
       games: {
         Row: {
           id: string;
+          slug: string;
           title: string;
           description: string | null;
           category: string;
@@ -23,6 +24,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
+          slug?: string;
           title: string;
           description?: string | null;
           category: string;

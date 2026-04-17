@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import MobileTabBar from "@/components/MobileTabBar";
 import HomePage from "@/pages/HomePage";
 import GamesPage from "@/pages/GamesPage";
+import GameDetailPage from "@/pages/GameDetailPage";
 import UploadPage from "@/pages/UploadPage";
 import ShortsPage from "@/pages/ShortsPage";
 import SearchPage from "@/pages/SearchPage";
@@ -27,6 +28,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/shorts" element={<ShortsPage />} />
               <Route path="/games" element={<GamesPage />} />
+              <Route path="/games/:slug" element={<GameDetailPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/my-games" element={<MyGamesPage />} />

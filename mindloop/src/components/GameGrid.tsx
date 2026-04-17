@@ -1,12 +1,11 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useGames } from "@/hooks/useGames";
 import { games as mockGames } from "@/data/games";
 import type { Game } from "@/types/database";
 import type { Game as MockGame } from "@/data/games";
-import GamePlayModal from "./GamePlayModal";
 
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
@@ -25,43 +24,43 @@ const categoryKeys = [
 // Normalize DB game or mock game into a common shape for rendering
 interface DisplayGame {
   id: string;
+  slug: string | null;
   title: string;
   thumbnail: string;
   category: string;
   playtime: string;
   type: string;
-  // DB game reference for modal
-  dbGame: Game | null;
 }
 
 function toDisplayGame(game: Game, index: number, t: TFunction): DisplayGame {
   return {
     id: game.id,
+    slug: game.slug,
     title: game.title,
     thumbnail: game.thumbnail_url || `https://picsum.photos/seed/${index + 200}/400/400`,
     category: t(`category.${game.category}`, { defaultValue: game.category }),
     playtime: game.playtime || "",
     type: game.type,
-    dbGame: game,
   };
 }
 
 function mockToDisplayGame(game: MockGame): DisplayGame {
   return {
     id: game.id,
+    slug: null,
     title: game.title,
     thumbnail: game.thumbnail,
     category: game.category,
     playtime: game.playtime,
     type: game.type,
-    dbGame: null,
   };
 }
+
+const MotionLink = motion(Link);
 
 export default function GameGrid() {
   const { t } = useTranslation();
   const { games: dbGames, loading } = useGames();
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
   // Use DB games if available, fallback to mock
   const displayGames: DisplayGame[] =
@@ -95,42 +94,45 @@ export default function GameGrid() {
               transition={{ duration: 0.5 }}
               className="columns-2 sm:columns-3 md:columns-4 lg:columns-6 gap-2 md:gap-3 [column-fill:_balance]"
             >
-              {displayGames.map((game, i) => (
-                <motion.div
-                  key={game.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.4, delay: i * 0.03, ease: "easeOut" as const }}
-                  whileHover={{ scale: 1.04, zIndex: 10 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    if (game.dbGame) setSelectedGame(game.dbGame);
-                  }}
-                  className="relative mb-2 md:mb-3 break-inside-avoid rounded-xl overflow-hidden cursor-pointer group"
-                >
-                  <img
-                    src={game.thumbnail}
-                    alt={game.title}
-                    loading="lazy"
-                    className="block w-full h-auto transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <p className="text-white text-sm font-semibold truncate">{game.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-white/70 text-xs">{game.category}</span>
-                      <span className="text-white/40 text-xs">·</span>
-                      <span className="text-white/70 text-xs">{game.playtime}</span>
+              {displayGames.map((game, i) => {
+                const href = game.slug ? `/games/${game.slug}` : "/games";
+                return (
+                  <MotionLink
+                    key={game.id}
+                    to={href}
+                    aria-label={game.title}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.4, delay: i * 0.03, ease: "easeOut" as const }}
+                    whileHover={{ scale: 1.04, zIndex: 10 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="relative mb-2 md:mb-3 break-inside-avoid rounded-xl overflow-hidden cursor-pointer group block"
+                  >
+                    <img
+                      src={game.thumbnail}
+                      alt={game.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="block w-full h-auto transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                      <p className="text-white text-sm font-semibold truncate">{game.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-white/70 text-xs">{game.category}</span>
+                        <span className="text-white/40 text-xs">·</span>
+                        <span className="text-white/70 text-xs">{game.playtime}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-md bg-white/20 text-white">
-                      {game.type === "shortform" ? "SHORT" : "LONG"}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="absolute top-2 right-2">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-md bg-white/20 text-white">
+                        {game.type === "shortform" ? "SHORT" : "LONG"}
+                      </span>
+                    </div>
+                  </MotionLink>
+                );
+              })}
             </motion.div>
           )}
 
@@ -148,10 +150,6 @@ export default function GameGrid() {
         </div>
       </section>
 
-      <GamePlayModal
-        game={selectedGame}
-        onClose={() => setSelectedGame(null)}
-      />
     </>
   );
 }

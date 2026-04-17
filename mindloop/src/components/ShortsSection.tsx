@@ -103,7 +103,18 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/shorts?game=${game.id}`;
+    // Canonical per-game URL for sharing (enables rich previews + SEO indexing)
+    const url = game.slug
+      ? `${window.location.origin}/games/${game.slug}`
+      : `${window.location.origin}/games`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: game.title, url });
+        return;
+      } catch {
+        // fall through to clipboard
+      }
+    }
     try {
       await navigator.clipboard.writeText(url);
       toast(t("common.urlCopied"), "success");
@@ -246,7 +257,8 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/shorts?game=${game.id}`;
+    // Mock cards aren't indexed — share the shorts page as a fallback
+    const url = `${window.location.origin}/shorts`;
     try {
       await navigator.clipboard.writeText(url);
       toast(t("common.urlCopied"), "success");

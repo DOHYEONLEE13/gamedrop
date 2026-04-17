@@ -270,6 +270,21 @@
     "loadFailed": "Failed to load game",
     "noFile": "No game file available"
   },
+  "gameDetail": {
+    "back": "Back",
+    "play": "Play",
+    "loading": "Loading game...",
+    "notFound": "Game not found",
+    "notFoundDesc": "This game may have been removed or is not yet published.",
+    "browse": "Browse games",
+    "views": "{{count}} views",
+    "likes": "{{count}} likes",
+    "playtime": "Playtime",
+    "category": "Category",
+    "description": "About this game",
+    "share": "Share",
+    "playNow": "Play now"
+  },
   "security": {
     "cookieAccess": "document.cookie access detected",
     "evalUsage": "eval() or new Function() usage detected",

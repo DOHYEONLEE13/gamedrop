@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { games as mockGames } from "@/data/games";
 import { useGames } from "@/hooks/useGames";
 import type { Game as DbGame } from "@/types/database";
-import GamePlayModal from "./GamePlayModal";
+
+const MotionLink = motion(Link);
 
 const HERO_VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4";
@@ -82,12 +84,16 @@ const quickTags = ["액션", "퍼즐", "캐주얼", "RPG", "전략", "숏폼", "
 // Unified display type
 interface DisplayGame {
   id: string;
+  slug: string | null;
   title: string;
   thumbnail: string;
   category: string;
   playtime: string;
   type: string;
-  dbGame: DbGame | null;
+}
+
+function hrefFor(game: DisplayGame): string {
+  return game.slug ? `/games/${game.slug}` : "/games";
 }
 
 /* ── Main Component ── */
@@ -95,33 +101,32 @@ export default function SearchSection() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<DbGame | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { games: dbGames } = useGames();
 
   // Build display list from DB or mock
   const allGames: DisplayGame[] = useMemo(() => {
     if (dbGames.length > 0) {
-      return dbGames.map((g, i) => ({
+      return dbGames.map((g: DbGame, i) => ({
         id: g.id,
+        slug: g.slug,
         title: g.title,
         thumbnail: g.thumbnail_url || `https://picsum.photos/seed/${i + 200}/400/400`,
         category: t(`category.${g.category}`, g.category),
         playtime: g.playtime || "",
         type: g.type,
-        dbGame: g,
       }));
     }
     return mockGames.map((g) => ({
       id: g.id,
+      slug: null,
       title: g.title,
       thumbnail: g.thumbnail,
       category: g.category,
       playtime: g.playtime,
       type: g.type,
-      dbGame: null,
     }));
-  }, [dbGames]);
+  }, [dbGames, t]);
 
   // Real-time filter by title or category
   const filteredGames = useMemo(() => {
@@ -300,8 +305,10 @@ export default function SearchSection() {
                   {/* Recommended games grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-[120px] sm:auto-rows-[140px] md:auto-rows-[160px] gap-2 md:gap-3">
                     {allGames.map((game, i) => (
-                      <motion.div
+                      <MotionLink
                         key={game.id}
+                        to={hrefFor(game)}
+                        aria-label={game.title}
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true, margin: "-50px" }}
@@ -312,8 +319,7 @@ export default function SearchSection() {
                         }}
                         whileHover={{ scale: 1.04, zIndex: 10 }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => { if (game.dbGame) setSelectedGame(game.dbGame); }}
-                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group`}
+                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group block`}
                       >
                         <img
                           src={game.thumbnail}
@@ -337,7 +343,7 @@ export default function SearchSection() {
                             {game.type === "shortform" ? "SHORT" : "LONG"}
                           </span>
                         </div>
-                      </motion.div>
+                      </MotionLink>
                     ))}
                   </div>
                 </motion.div>
@@ -362,8 +368,10 @@ export default function SearchSection() {
                   {/* Poki-style grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-[120px] sm:auto-rows-[140px] md:auto-rows-[160px] gap-2 md:gap-3">
                     {filteredGames.map((game, i) => (
-                      <motion.div
+                      <MotionLink
                         key={game.id}
+                        to={hrefFor(game)}
+                        aria-label={game.title}
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
@@ -373,8 +381,7 @@ export default function SearchSection() {
                         }}
                         whileHover={{ scale: 1.04, zIndex: 10 }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => { if (game.dbGame) setSelectedGame(game.dbGame); }}
-                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group`}
+                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group block`}
                       >
                         {/* Thumbnail */}
                         <img
@@ -409,7 +416,7 @@ export default function SearchSection() {
                             {game.type === "shortform" ? "SHORT" : "LONG"}
                           </span>
                         </div>
-                      </motion.div>
+                      </MotionLink>
                     ))}
                   </div>
                 </motion.div>
@@ -471,8 +478,10 @@ export default function SearchSection() {
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 auto-rows-[120px] sm:auto-rows-[140px] md:auto-rows-[160px] gap-2 md:gap-3">
                     {recommendedGames.map((game, i) => (
-                      <motion.div
+                      <MotionLink
                         key={game.id}
+                        to={hrefFor(game)}
+                        aria-label={game.title}
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
@@ -482,8 +491,7 @@ export default function SearchSection() {
                         }}
                         whileHover={{ scale: 1.04, zIndex: 10 }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => { if (game.dbGame) setSelectedGame(game.dbGame); }}
-                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group`}
+                        className={`${getSizeClass(i)} relative rounded-xl overflow-hidden cursor-pointer group block`}
                       >
                         <img
                           src={game.thumbnail}
@@ -507,7 +515,7 @@ export default function SearchSection() {
                             {game.type === "shortform" ? "SHORT" : "LONG"}
                           </span>
                         </div>
-                      </motion.div>
+                      </MotionLink>
                     ))}
                   </div>
                 </motion.div>
@@ -516,11 +524,6 @@ export default function SearchSection() {
           </div>
         </div>
       </section>
-
-      <GamePlayModal
-        game={selectedGame}
-        onClose={() => setSelectedGame(null)}
-      />
     </>
   );
 }
