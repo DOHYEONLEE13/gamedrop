@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -318,6 +319,22 @@ export default function UploadSection() {
             <p className="text-muted-foreground text-base">
               {t("upload.subtitle")}
             </p>
+          </motion.div>
+
+          {/* Guide banner — for first-time uploaders who haven't made a game yet */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20 text-sm flex items-center justify-between gap-3"
+          >
+            <span className="text-foreground/80">{t("upload.guideBannerLead")}</span>
+            <Link
+              to="/guide"
+              className="shrink-0 text-accent font-medium hover:underline whitespace-nowrap"
+            >
+              {t("upload.guideBannerCta")}
+            </Link>
           </motion.div>
 
           {/* Login banner */}

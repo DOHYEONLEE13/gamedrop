@@ -16,6 +16,8 @@ import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
 import ContactPage from "@/pages/ContactPage";
 import AboutPage from "@/pages/AboutPage";
+import GuidePage from "@/pages/GuidePage";
+import ContentPolicyPage from "@/pages/ContentPolicyPage";
 
 export default function App() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
               <Route path="/terms" element={<TermsOfServicePage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/guide" element={<GuidePage />} />
+              <Route path="/content-policy" element={<ContentPolicyPage />} />
             </Routes>
             <MobileTabBar />
           </div>

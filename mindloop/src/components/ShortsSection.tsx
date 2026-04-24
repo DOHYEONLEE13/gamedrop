@@ -7,6 +7,11 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useGameInteractions } from "@/hooks/useGameInteractions";
 import { useToast } from "@/components/Toast";
 import AuthModal from "./AuthModal";
+import AdBanner from "./AdBanner";
+
+// AdSense ad unit slot ID for the vertical side ad on Shorts desktop view.
+// Fill with real slot ID from AdSense dashboard — AdBanner auto-null-renders when empty.
+const SHORTS_SIDE_AD_SLOT = "";
 import { shorts as mockShorts } from "@/data/shorts";
 import type { Game } from "@/types/database";
 import type { TFunction } from "i18next";
@@ -414,6 +419,16 @@ export default function ShortsSection() {
           {Array.from({ length: itemCount }).map((_, i) => (
             <div key={i} className={`w-1.5 rounded-full transition-all duration-300 ${activeIndex === i ? "h-6 bg-white" : "h-1.5 bg-white/30"}`} />
           ))}
+        </div>
+
+        {/* Desktop-only vertical side ad — lives in the empty space left of the shorts card */}
+        <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2 w-[160px] z-[5]">
+          <AdBanner
+            slot={SHORTS_SIDE_AD_SLOT}
+            format="vertical"
+            contentCount={useDbGames ? dbGames.length : 0}
+            minContent={5}
+          />
         </div>
       </section>
       <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useGameBySlug } from "@/hooks/useGames";
+import { useGameBySlug, useGames } from "@/hooks/useGames";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useGameInteractions } from "@/hooks/useGameInteractions";
 import { useToast } from "@/components/Toast";
@@ -45,6 +45,7 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { game, loading, notFound } = useGameBySlug(slug);
+  const { games: allGames } = useGames();
   const { user } = useAuthContext();
   const { toast } = useToast();
   const { liked, saved, toggleLike, toggleSave, incrementViews, recordPlay } =
@@ -342,6 +343,107 @@ export default function GameDetailPage() {
               </div>
             </section>
           )}
+
+          {/* Game info card */}
+          <section className="mb-8 rounded-2xl border border-border/40 bg-card/40 p-5 md:p-6">
+            <h2 className="text-lg md:text-xl font-semibold mb-4">
+              {t("gameDetail.infoTitle")}
+            </h2>
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <dt className="text-muted-foreground text-xs mb-1">
+                  {t("gameDetail.category")}
+                </dt>
+                <dd className="font-medium">{categoryLabel}</dd>
+              </div>
+              {game.playtime && (
+                <div>
+                  <dt className="text-muted-foreground text-xs mb-1">
+                    {t("gameDetail.playtime")}
+                  </dt>
+                  <dd className="font-medium">{game.playtime}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-muted-foreground text-xs mb-1">
+                  {t("gameDetail.uploadedOn")}
+                </dt>
+                <dd className="font-medium">
+                  {new Date(game.created_at).toLocaleDateString()}
+                </dd>
+              </div>
+              {game.tags && game.tags.length > 0 && (
+                <div className="col-span-2 md:col-span-1">
+                  <dt className="text-muted-foreground text-xs mb-1">
+                    {t("gameDetail.tags")}
+                  </dt>
+                  <dd className="font-medium truncate">{game.tags.join(", ")}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+
+          {/* How to play — category-based fallback when description has no controls info */}
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-3">
+              {t("gameDetail.howToPlayTitle")}
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {t(`gameDetail.howToPlay${game.category.charAt(0).toUpperCase() + game.category.slice(1)}`, {
+                defaultValue: t("gameDetail.howToPlayCasual"),
+              })}
+            </p>
+          </section>
+
+          {/* Similar games — same category, exclude self, top 6 */}
+          {(() => {
+            const similar = allGames
+              .filter((g) => g.category === game.category && g.id !== game.id)
+              .slice(0, 6);
+            return (
+              <section className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">
+                  {t("gameDetail.similarTitle")}
+                </h2>
+                {similar.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {similar.map((g) => (
+                      <Link
+                        key={g.id}
+                        to={`/games/${g.slug}`}
+                        className="group block rounded-xl overflow-hidden border border-border/30 hover:border-border transition-colors"
+                      >
+                        <div className="aspect-[4/3] bg-card overflow-hidden">
+                          {g.thumbnail_url ? (
+                            <img
+                              src={g.thumbnail_url}
+                              alt={g.title}
+                              loading="lazy"
+                              decoding="async"
+                              width="400"
+                              height="300"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                              {g.title}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-2">
+                          <p className="text-sm font-medium truncate">{g.title}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {t("gameDetail.similarEmpty")}
+                  </p>
+                )}
+              </section>
+            );
+          })()}
         </div>
       </div>
 
