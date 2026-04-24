@@ -156,6 +156,10 @@ function ShortCard({ game, isActive }: { game: Game; isActive: boolean }) {
             <img
               src={thumbnail}
               alt={game.title}
+              loading="lazy"
+              decoding="async"
+              width="400"
+              height="712"
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 isActive && htmlContent ? "opacity-0" : isActive ? "opacity-30" : "opacity-100"
               }`}
@@ -281,7 +285,7 @@ function MockShortCard({ game, isActive }: { game: typeof mockShorts[0]; isActiv
           }} />
         )}
         <div className="relative w-full h-full rounded-3xl overflow-hidden z-[1]">
-          <img src={game.thumbnail} alt={game.title} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isActive ? "opacity-30" : "opacity-100"}`} />
+          <img src={game.thumbnail} alt={game.title} loading="lazy" decoding="async" width="400" height="712" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isActive ? "opacity-30" : "opacity-100"}`} />
           <AnimatePresence>
             {isActive && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[1] flex flex-col items-center justify-center bg-black/40">

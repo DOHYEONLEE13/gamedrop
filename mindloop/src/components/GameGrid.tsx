@@ -114,6 +114,8 @@ export default function GameGrid() {
                       alt={game.title}
                       loading="lazy"
                       decoding="async"
+                      width="400"
+                      height="600"
                       className="block w-full h-auto transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -27,10 +27,11 @@ export default function SEO({
   const fullTitle = title ? `${title} | GameDrop` : defaultTitle;
   const resolvedDesc = description ?? defaultDesc;
   const ogLocale = i18n.language === "en" ? "en_US" : "ko_KR";
+  const htmlLang = i18n.language === "en" ? "en" : "ko";
   const url = `${BASE_URL}${path}`;
 
   return (
-    <Helmet>
+    <Helmet htmlAttributes={{ lang: htmlLang }}>
       <title>{fullTitle}</title>
       <meta name="description" content={resolvedDesc} />
       <link rel="canonical" href={url} />

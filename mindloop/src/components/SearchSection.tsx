@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { games as mockGames } from "@/data/games";
 import { useGames } from "@/hooks/useGames";
@@ -99,10 +99,21 @@ function hrefFor(game: DisplayGame): string {
 /* ── Main Component ── */
 export default function SearchSection() {
   const { t } = useTranslation();
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Initialize from ?q= query param (for Google Sitelinks Search Box schema)
+  const [query, setQueryRaw] = useState(() => searchParams.get("q") ?? "");
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { games: dbGames } = useGames();
+
+  // Keep URL ?q= in sync with input state (shallow, no navigation)
+  const setQuery = (value: string) => {
+    setQueryRaw(value);
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set("q", value);
+    else next.delete("q");
+    setSearchParams(next, { replace: true });
+  };
 
   // Build display list from DB or mock
   const allGames: DisplayGame[] = useMemo(() => {
@@ -325,6 +336,9 @@ export default function SearchSection() {
                           src={game.thumbnail}
                           alt={game.title}
                           loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="600"
                           className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -388,6 +402,9 @@ export default function SearchSection() {
                           src={game.thumbnail}
                           alt={game.title}
                           loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="600"
                           className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
                         />
 
@@ -497,6 +514,9 @@ export default function SearchSection() {
                           src={game.thumbnail}
                           alt={game.title}
                           loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="600"
                           className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

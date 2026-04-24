@@ -48,7 +48,7 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
       onClick={onClick}
       className="relative rounded-xl overflow-hidden cursor-pointer group aspect-[4/3]"
     >
-      <img src={thumbnail} alt={game.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105" />
+      <img src={thumbnail} alt={game.title} loading="lazy" decoding="async" width="400" height="300" className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110 group-hover:scale-105" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
         <p className="text-white text-sm font-semibold truncate">{game.title}</p>

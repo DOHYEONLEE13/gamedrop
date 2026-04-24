@@ -19,6 +19,8 @@ export default function GamesPage() {
         description={t("seo.gamesDesc")}
         path="/games"
       />
+      <h1 className="sr-only">{t("pageHeading.gamesH1")}</h1>
+      <p className="sr-only">{t("pageHeading.gamesLead")}</p>
       <GameGrid />
       <AdBanner
         slot={GAMES_PAGE_AD_SLOT}

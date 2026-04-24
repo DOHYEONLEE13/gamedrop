@@ -418,5 +418,13 @@
     "privacyTitle": "Privacy Policy",
     "termsTitle": "Terms of Service",
     "contactTitle": "Contact Us"
+  },
+  "pageHeading": {
+    "shortsH1": "Shortform Games",
+    "shortsLead": "Swipe through quick HTML games under 5 minutes",
+    "gamesH1": "Browse All Browser Games",
+    "gamesLead": "Explore free HTML games by category — action, puzzle, RPG and more",
+    "searchH1": "Search Games",
+    "searchLead": "Find games by title, category, or tags"
   }
 }

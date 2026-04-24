@@ -64,7 +64,7 @@ export default function Mission() {
 
       {/* Scroll-driven word reveal */}
       <div ref={containerRef} className="max-w-4xl mx-auto">
-        <p className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-medium tracking-[-0.5px] md:tracking-[-1px] leading-snug">
+        <h2 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-medium tracking-[-0.5px] md:tracking-[-1px] leading-snug">
           {p1Words.map((word, i) => {
             const start = i / totalWords;
             const end = (i + 1) / totalWords;
@@ -78,7 +78,7 @@ export default function Mission() {
               />
             );
           })}
-        </p>
+        </h2>
 
         <p className="text-base sm:text-xl md:text-2xl lg:text-3xl font-medium mt-10 leading-snug">
           {p2Words.map((word, i) => {
